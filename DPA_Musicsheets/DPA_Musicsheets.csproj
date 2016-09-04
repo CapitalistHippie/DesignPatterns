@@ -85,6 +85,10 @@
   <ItemGroup>
     <Compile Include="MidiPlayer.cs" />
     <Compile Include="MidiReader.cs" />
+    <Compile Include="Model\Note.cs" />
+    <Compile Include="Model\Rest.cs" />
+    <Compile Include="Model\Symbol.cs" />
+    <Compile Include="Model\SymbolDuration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
