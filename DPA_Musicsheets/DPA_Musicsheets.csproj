@@ -86,6 +86,8 @@
     <Compile Include="MidiPlayer.cs" />
     <Compile Include="MidiReader.cs" />
     <Compile Include="Model\Note.cs" />
+    <Compile Include="Model\Repeat.cs" />
+    <Compile Include="Model\TimeSignature.cs" />
     <Compile Include="Model\Rest.cs" />
     <Compile Include="Model\Symbol.cs" />
     <Compile Include="Model\SymbolDuration.cs" />
