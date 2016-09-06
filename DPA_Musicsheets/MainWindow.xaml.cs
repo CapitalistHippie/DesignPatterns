@@ -39,12 +39,15 @@ namespace DPA_Musicsheets
             this.MidiTracks = new ObservableCollection<MidiTrack>();
             InitializeComponent();
             DataContext = MidiTracks;
-            FillPSAMViewer();
+            //FillPSAMViewer();
             //notenbalk.LoadFromXmlFile("Resources/example.xml");
         }
 
-        private void FillPSAMViewer()
+        private void FillPSAMViewer(Model.Score score)
         {
+            
+
+
             staff.ClearMusicalIncipit();
 
             // Clef = sleutel
@@ -102,6 +105,10 @@ namespace DPA_Musicsheets
             if (openFileDialog.ShowDialog() == true)
             {
                 txt_MidiFilePath.Text = openFileDialog.FileName;
+
+                // Load score and display for our viewing pleasure.
+                Model.Score score = ScoreBuilder.Instance.BuildScoreFromMidi(txt_MidiFilePath.Text);
+                FillPSAMViewer(score);
             }
         }
         

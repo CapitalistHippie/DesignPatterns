@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 namespace DPA_Musicsheets.Model
 {
-    public class TimeSignature : StaffSymbol
+    public class Score
     {
-        public int NumberOfBeats { get; set; }
-        public int Measure { get; set; }
+        public List<Staff> Staves { get; set; }
     }
 }

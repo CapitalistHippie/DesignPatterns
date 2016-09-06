@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace DPA_Musicsheets.Model
 {
-    public class Rest : Symbol
+    public class Rest : StaffSymbol
     {
-        public SymbolDuration Duration { get; set; }
+        public StaffSymbolDuration Duration { get; set; }
         public int NumberOfDots { get; set; }
     }
 }

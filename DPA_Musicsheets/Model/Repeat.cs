@@ -12,7 +12,7 @@ namespace DPA_Musicsheets.Model
         BACKWARD
     }
 
-    public class Repeat : Symbol
+    public class Repeat : StaffSymbol
     {
         public RepeatType Type { get; set; }
     }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DPA_Musicsheets.Model
 {
-    public enum SymbolDuration
+    public enum StaffSymbolDuration
     {
         WHOLE = 1,
         HALF = 2,

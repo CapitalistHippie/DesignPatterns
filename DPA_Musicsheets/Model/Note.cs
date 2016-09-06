@@ -17,12 +17,12 @@ namespace DPA_Musicsheets.Model
         B = 'B'
     }
 
-    public class Note : Symbol
+    public class Note : StaffSymbol
     {
         public NoteStep Step { get; set; }
         public int Alter { get; set; }
         public int Octave { get; set; }
-        public SymbolDuration Duration { get; set; }
+        public StaffSymbolDuration Duration { get; set; }
         public int NumberOfDots { get; set; }
     }
 }
