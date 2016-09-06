@@ -9,5 +9,10 @@ namespace DPA_Musicsheets.Model
     public class Score
     {
         public List<Staff> Staves { get; set; }
+
+        public Score()
+        {
+            Staves = new List<Staff>();
+        }
     }
 }

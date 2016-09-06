@@ -12,5 +12,10 @@ namespace DPA_Musicsheets.Model
         public int Number { get; set; }
 
         public List<StaffSymbol> Symbols { get; set; }
+
+        public Staff()
+        {
+            Symbols = new List<StaffSymbol>();
+        }
     }
 }

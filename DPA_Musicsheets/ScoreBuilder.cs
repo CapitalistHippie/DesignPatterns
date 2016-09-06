@@ -61,9 +61,18 @@ namespace DPA_Musicsheets
                         case MessageType.Meta:
                             var metaMessage = midiEvent.MidiMessage as MetaMessage;
                             //trackLog.Messages.Add(GetMetaString(metaMessage));
-                            if (metaMessage.MetaType == MetaType.TrackName)
+                            switch (metaMessage.MetaType)
                             {
-                                staff.Name = Encoding.Default.GetString(metaMessage.GetBytes());
+                                case MetaType.TrackName:
+                                    staff.Name = Encoding.Default.GetString(metaMessage.GetBytes());
+                                    break;
+                                case MetaType.TimeSignature:
+                                    byte[] bytes = metaMessage.GetBytes();
+                                    TimeSignature timeSignature = new TimeSignature();
+                                    timeSignature.Measure = bytes[0];
+                                    timeSignature.NumberOfBeats = (int)(1 / Math.Pow(bytes[1], -2));
+                                    staff.Symbols.Add(timeSignature);
+                                    break;
                             }
                             break;
                         default:
