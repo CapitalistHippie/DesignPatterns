@@ -8,8 +8,11 @@ namespace DPA_Musicsheets.Model
 {
     public class Staff
     {
-        public String Name { get; set; }
-        public int Number { get; set; }
+        public int StaffNumber { get; set; }
+
+        public string StaffName { get; set; }
+
+        public string InstrumentName { get; set; }
 
         public List<StaffSymbol> Symbols { get; set; }
 

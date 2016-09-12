@@ -23,7 +23,7 @@ namespace DPA_Musicsheets
             }
         }
 
-        private ScoreBuilder() //this is correct right? private constructor
+        private ScoreBuilder() // This is correct right? private constructor. Yup
         {
             keycodeDictionary = new Dictionary<int, string>
             {
@@ -54,13 +54,12 @@ namespace DPA_Musicsheets
             for (int i = 0; i < midiSequence.Count; i++)
             {
                 Staff staff = new Staff();
-                staff.Number = i;
+                staff.StaffNumber = i;
 
                 Track track = midiSequence[i];
 
                 foreach (var midiEvent in track.Iterator())
                 {
-                    // Elke messagetype komt ook overeen met een class. Daarom moet elke keer gecast worden.
                     switch (midiEvent.MidiMessage.MessageType)
                     {
                         // ChannelMessages zijn de inhoudelijke messages.
@@ -77,7 +76,7 @@ namespace DPA_Musicsheets
                             int keyCodeConverted = keyCode;
                             while (keyCodeConverted > 11)
                             {
-                                keyCodeConverted = keyCodeConverted - 12;
+                                keyCodeConverted -= 12;
                             }
                             string noteStep = keycodeDictionary[keyCodeConverted];
                             string cleanNoteStep = noteStep.TrimEnd('#');
@@ -108,26 +107,20 @@ namespace DPA_Musicsheets
                             break;
                         case MessageType.SystemRealtime:
                             break;
-                        // Meta zegt iets over de track zelf.
                         case MessageType.Meta:
                             var metaMessage = midiEvent.MidiMessage as MetaMessage;
-                            //trackLog.Messages.Add(GetMetaString(metaMessage));
                             switch (metaMessage.MetaType)
                             {
                                 case MetaType.TrackName:
-                                    staff.Name = Encoding.Default.GetString(metaMessage.GetBytes());
+                                    staff.StaffName = Encoding.Default.GetString(metaMessage.GetBytes());
                                     break;
-                                case MetaType.TimeSignature:
-                                    byte[] bytes = metaMessage.GetBytes();
-                                    TimeSignature timeSignature = new TimeSignature();
-                                    timeSignature.Measure = bytes[0];
-                                    timeSignature.NumberOfBeats = (int)(1 / Math.Pow(bytes[1], -2));
-                                    staff.Symbols.Add(timeSignature);
+                                case MetaType.InstrumentName:
+                                    staff.InstrumentName = Encoding.Default.GetString(metaMessage.GetBytes());
+                                    break;
+                                default:
+                                    staff.Symbols.Add(StaffSymbolFactory.Instance.ConstructSymbol(metaMessage));
                                     break;
                             }
-                            break;
-                        default:
-                            //trackLog.Messages.Add(String.Format("MidiEvent {0}, absolute ticks: {1}, deltaTicks: {2}", midiEvent.MidiMessage.MessageType, midiEvent.AbsoluteTicks, midiEvent.DeltaTicks));
                             break;
                     }
                 }

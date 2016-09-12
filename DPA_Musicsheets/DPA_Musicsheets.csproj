@@ -69,7 +69,9 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="MidiTrack.cs" />
+    <Compile Include="Model\Tempo.cs" />
     <Compile Include="Model\Score.cs" />
+    <Compile Include="Model\StaffSymbolFactory.cs" />
     <Compile Include="ScoreBuilder.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
