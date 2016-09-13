@@ -63,6 +63,8 @@ namespace DPA_Musicsheets
 
                 Track track = midiSequence[i];
 
+                Dictionary<int, Note> keyNoteMap = new Dictionary<int, Note>();
+
                 foreach (var midiEvent in track.Iterator())
                 {
                     switch (midiEvent.MidiMessage.MessageType)
@@ -71,28 +73,46 @@ namespace DPA_Musicsheets
                         case MessageType.Channel:
                             var channelMessage = midiEvent.MidiMessage as ChannelMessage;
 
-                            // Get Note Step
                             int keyCode = channelMessage.Data1;
-                            int keyCodeConverted = keyCode;
-                            int octave = 0;
-                            while (keyCodeConverted > 11)
-                            {
-                                keyCodeConverted -= 12;
-                                octave++;
-                            }
-                            string noteStep = keycodeDictionary[keyCodeConverted];
-                            string cleanNoteStep = noteStep.TrimEnd('#');
 
-                            // Get Note Alter (Sharps)
-                            int alter = 0;
-                            if (noteStep.Contains("#"))
+                            if (channelMessage.Command == ChannelCommand.NoteOn)
                             {
-                                alter++;
-                            }
+                                Note note = new Note();
+                                note.StartTime = midiEvent.AbsoluteTicks;
 
-                            // Get Note Duration
-                            double noteDuration = midiEvent.DeltaTicks / ticksPerBeat;
-                            double noteLength = noteDuration * (1d / timeSignature.Measure);
+                                int keyCodeStep = keyCode;
+                                int octave = 0;
+                                while (keyCodeStep > 11)
+                                {
+                                    keyCodeStep -= 12;
+                                    octave++;
+                                }
+                                note.Step = keyCodeStep;
+                                note.Octave = octave;
+
+                                // Get Note Alter (Sharps)
+                                int alter = 0;
+                                if (keycodeDictionary[keyCodeStep].Contains("#"))
+                                {
+                                    alter++;
+                                }
+                                note.Alter = alter;
+
+
+                                keyNoteMap.Add(keyCode, note);
+                            }
+                            else if (channelMessage.Command == ChannelCommand.NoteOff)
+                            {
+                                Note note = keyNoteMap[keyCode];
+
+                                int deltaTicks = midiEvent.AbsoluteTicks - note.StartTime;
+
+                                // Get the note duration and length.
+                                double noteDuration = (double)deltaTicks / ticksPerBeat;
+                                double noteLength = noteDuration * (1d / timeSignature.Measure);
+
+                                keyNoteMap.Remove(keyCode);
+                            }
 
                             break;
                         case MessageType.SystemExclusive:
