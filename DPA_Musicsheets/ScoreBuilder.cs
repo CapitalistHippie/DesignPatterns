@@ -23,7 +23,7 @@ namespace DPA_Musicsheets
             }
         }
 
-        private ScoreBuilder() // This is correct right? private constructor. Yup
+        private ScoreBuilder()
         {
             keycodeDictionary = new Dictionary<int, string>
             {
@@ -50,6 +50,11 @@ namespace DPA_Musicsheets
             var midiSequence = new Sequence();
             midiSequence.Load(filePath);
 
+            int ticksPerBeat = midiSequence.Division;
+
+            Tempo tempo = null;
+            TimeSignature timeSignature = null;
+
             // Create a new staff for each track in the sequence.
             for (int i = 0; i < midiSequence.Count; i++)
             {
@@ -60,25 +65,20 @@ namespace DPA_Musicsheets
 
                 foreach (var midiEvent in track.Iterator())
                 {
-                    Tempo tempo;
-
                     switch (midiEvent.MidiMessage.MessageType)
                     {
                         // ChannelMessages zijn de inhoudelijke messages.
                         case MessageType.Channel:
                             var channelMessage = midiEvent.MidiMessage as ChannelMessage;
-                            // Data1: De keycode. 0 = laagste C, 1 = laagste C#, 2 = laagste D etc.
-                            // 160 is centrale C op piano.
-                            //trackLog.Messages.Add(String.Format("Keycode: {0}, Command: {1}, absolute time: {2}, delta time: {3}"
-                            //    , channelMessage.Data1, channelMessage.Command, midiEvent.AbsoluteTicks, midiEvent.DeltaTicks));
-
 
                             // Get Note Step
                             int keyCode = channelMessage.Data1;
                             int keyCodeConverted = keyCode;
+                            int octave = 0;
                             while (keyCodeConverted > 11)
                             {
                                 keyCodeConverted -= 12;
+                                octave++;
                             }
                             string noteStep = keycodeDictionary[keyCodeConverted];
                             string cleanNoteStep = noteStep.TrimEnd('#');
@@ -90,17 +90,9 @@ namespace DPA_Musicsheets
                                 alter++;
                             }
 
-                            // Get Note Octave
-                            int octave = 0;
-                            while (keyCode != keyCodeConverted)
-                            {
-                                keyCodeConverted = keyCodeConverted + 12;
-                                octave++;
-                            }
-
                             // Get Note Duration
-
-                            // hmm not sure, will have to use deltaTime on the NoteOff probably
+                            double noteDuration = midiEvent.DeltaTicks / ticksPerBeat;
+                            double noteLength = noteDuration * (1d / timeSignature.Measure);
 
                             break;
                         case MessageType.SystemExclusive:
@@ -122,6 +114,10 @@ namespace DPA_Musicsheets
                                 case MetaType.Tempo:
                                     tempo = (Tempo)StaffSymbolFactory.Instance.ConstructSymbol(metaMessage);
                                     staff.Symbols.Add(tempo);
+                                    break;
+                                case MetaType.TimeSignature:
+                                    timeSignature = (TimeSignature)StaffSymbolFactory.Instance.ConstructSymbol(metaMessage);
+                                    staff.Symbols.Add(timeSignature);
                                     break;
                                 default:
                                     staff.Symbols.Add(StaffSymbolFactory.Instance.ConstructSymbol(metaMessage));
