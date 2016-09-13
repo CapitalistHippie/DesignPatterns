@@ -60,6 +60,8 @@ namespace DPA_Musicsheets
 
                 foreach (var midiEvent in track.Iterator())
                 {
+                    Tempo tempo;
+
                     switch (midiEvent.MidiMessage.MessageType)
                     {
                         // ChannelMessages zijn de inhoudelijke messages.
@@ -116,6 +118,10 @@ namespace DPA_Musicsheets
                                     break;
                                 case MetaType.InstrumentName:
                                     staff.InstrumentName = Encoding.Default.GetString(metaMessage.GetBytes());
+                                    break;
+                                case MetaType.Tempo:
+                                    tempo = (Tempo)StaffSymbolFactory.Instance.ConstructSymbol(metaMessage);
+                                    staff.Symbols.Add(tempo);
                                     break;
                                 default:
                                     staff.Symbols.Add(StaffSymbolFactory.Instance.ConstructSymbol(metaMessage));
