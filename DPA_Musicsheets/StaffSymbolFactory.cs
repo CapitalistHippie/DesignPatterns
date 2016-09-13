@@ -1,11 +1,12 @@
-﻿using Sanford.Multimedia.Midi;
+﻿using DPA_Musicsheets.Model;
+using Sanford.Multimedia.Midi;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DPA_Musicsheets.Model
+namespace DPA_Musicsheets
 {
     public class StaffSymbolFactory
     {
