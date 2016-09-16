@@ -83,6 +83,34 @@ namespace DPA_Musicsheets
             staff.AddMusicalSymbol(new Barline());
         }
 
+        private void OnOpenButtonClick(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog() { Filter = "Midi Files(.mid)|*.mid|LilyPond Files(.ly)|*.ly" };
+            if (openFileDialog.ShowDialog() == true)
+            {
+                // Show the file path in the text box.
+                FilePathTextBox.Text = openFileDialog.FileName;
+
+                string extension = System.IO.Path.GetExtension(openFileDialog.FileName);
+
+                switch (extension)
+                {
+                    case ".mid":
+                        // Show the MIDI tracks content.
+                        ShowMidiTracks(MidiReader.ReadMidi(FilePathTextBox.Text));
+
+                        // Load score and display for our viewing pleasure.
+                        Model.Score score = ScoreBuilder.Instance.BuildScoreFromMidi(FilePathTextBox.Text);
+                        FillPSAMViewer(score);
+                        break;
+                    case ".ly":
+                        // Load the LilyPond.
+                        LilyPondBuilder.Instance.BuildLilyPondFromMidi(FilePathTextBox.Text);
+                        break;
+                }
+            }
+        }
+
         private void OnPlayButtonClick(object sender, RoutedEventArgs e)
         {
             if (player != null)
@@ -94,22 +122,6 @@ namespace DPA_Musicsheets
             player.Play(FilePathTextBox.Text);
         }
 
-        private void OnOpenButtonClick(object sender, RoutedEventArgs e)
-        {
-            OpenFileDialog openFileDialog = new OpenFileDialog() { Filter = "Midi Files(.mid)|*.mid" };
-            if (openFileDialog.ShowDialog() == true)
-            {
-                FilePathTextBox.Text = openFileDialog.FileName;
-
-                // Show the MIDI tracks content
-                ShowMidiTracks(MidiReader.ReadMidi(FilePathTextBox.Text));
-
-                // Load score and display for our viewing pleasure.
-                Model.Score score = ScoreBuilder.Instance.BuildScoreFromMidi(FilePathTextBox.Text);
-                FillPSAMViewer(score);
-            }
-        }
-        
         private void OnStopButtonClick(object sender, RoutedEventArgs e)
         {
             if (player != null)

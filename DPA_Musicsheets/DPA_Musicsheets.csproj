@@ -71,6 +71,7 @@
     <Compile Include="MidiTrack.cs" />
     <Compile Include="Model\Tempo.cs" />
     <Compile Include="Model\Score.cs" />
+    <Compile Include="LilyPondBuilder.cs" />
     <Compile Include="StaffSymbolFactory.cs" />
     <Compile Include="ScoreBuilder.cs" />
     <Page Include="MainWindow.xaml">
