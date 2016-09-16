@@ -26,28 +26,23 @@ namespace DPA_Musicsheets
     /// </summary>
     public partial class MainWindow : Window
     {
-        private MidiPlayer _player;
-        public ObservableCollection<MidiTrack> MidiTracks { get; private set; }
-
         // De OutputDevice is een midi device of het midikanaal van je PC.
         // Hierop gaan we audio streamen.
         // DeviceID 0 is je audio van je PC zelf.
-        private OutputDevice _outputDevice = new OutputDevice(0);
+        private OutputDevice                    outputDevice = new OutputDevice(0);
+        private MidiPlayer                      player;
+        public ObservableCollection<MidiTrack>  MidiTracks { get; private set; }
 
         public MainWindow()
         {
             this.MidiTracks = new ObservableCollection<MidiTrack>();
+
             InitializeComponent();
             DataContext = MidiTracks;
-            //FillPSAMViewer();
-            //notenbalk.LoadFromXmlFile("Resources/example.xml");
         }
 
         private void FillPSAMViewer(Model.Score score)
         {
-            
-
-
             staff.ClearMusicalIncipit();
 
             // Clef = sleutel
@@ -88,39 +83,39 @@ namespace DPA_Musicsheets
             staff.AddMusicalSymbol(new Barline());
         }
 
-        private void btnPlay_Click(object sender, RoutedEventArgs e)
+        private void OnPlayButtonClick(object sender, RoutedEventArgs e)
         {
-            if(_player != null)
+            if (player != null)
             {
-                _player.Dispose();
+                player.Dispose();
             }
 
-            _player = new MidiPlayer(_outputDevice);
-            _player.Play(txt_MidiFilePath.Text);
+            player = new MidiPlayer(outputDevice);
+            player.Play(FilePathTextBox.Text);
         }
 
-        private void btnOpen_Click(object sender, RoutedEventArgs e)
+        private void OnOpenButtonClick(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog() { Filter = "Midi Files(.mid)|*.mid" };
             if (openFileDialog.ShowDialog() == true)
             {
-                txt_MidiFilePath.Text = openFileDialog.FileName;
+                FilePathTextBox.Text = openFileDialog.FileName;
 
                 // Load score and display for our viewing pleasure.
-                Model.Score score = ScoreBuilder.Instance.BuildScoreFromMidi(txt_MidiFilePath.Text);
+                Model.Score score = ScoreBuilder.Instance.BuildScoreFromMidi(FilePathTextBox.Text);
                 FillPSAMViewer(score);
             }
         }
         
-        private void btn_Stop_Click(object sender, RoutedEventArgs e)
+        private void OnStopButtonClick(object sender, RoutedEventArgs e)
         {
-            if (_player != null)
-                _player.Dispose();
+            if (player != null)
+                player.Dispose();
         }
 
-        private void btn_ShowContent_Click(object sender, RoutedEventArgs e)
+        private void OnShowContentButtonClick(object sender, RoutedEventArgs e)
         {
-            ShowMidiTracks(MidiReader.ReadMidi(txt_MidiFilePath.Text));
+            ShowMidiTracks(MidiReader.ReadMidi(FilePathTextBox.Text));
         }
 
         private void ShowMidiTracks(IEnumerable<MidiTrack> midiTracks)
@@ -131,15 +126,15 @@ namespace DPA_Musicsheets
                 MidiTracks.Add(midiTrack);
             }
 
-            tabCtrl_MidiContent.SelectedIndex = 0;
+            ContentTabControl.SelectedIndex = 0;
         }
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void OnWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            _outputDevice.Close();
-            if (_player != null)
+            outputDevice.Close();
+            if (player != null)
             {
-                _player.Dispose();
+                player.Dispose();
             }
         }
     }
