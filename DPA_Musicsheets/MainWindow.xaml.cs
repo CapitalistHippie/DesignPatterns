@@ -101,6 +101,9 @@ namespace DPA_Musicsheets
             {
                 FilePathTextBox.Text = openFileDialog.FileName;
 
+                // Show the MIDI tracks content
+                ShowMidiTracks(MidiReader.ReadMidi(FilePathTextBox.Text));
+
                 // Load score and display for our viewing pleasure.
                 Model.Score score = ScoreBuilder.Instance.BuildScoreFromMidi(FilePathTextBox.Text);
                 FillPSAMViewer(score);
@@ -111,11 +114,6 @@ namespace DPA_Musicsheets
         {
             if (player != null)
                 player.Dispose();
-        }
-
-        private void OnShowContentButtonClick(object sender, RoutedEventArgs e)
-        {
-            ShowMidiTracks(MidiReader.ReadMidi(FilePathTextBox.Text));
         }
 
         private void ShowMidiTracks(IEnumerable<MidiTrack> midiTracks)
