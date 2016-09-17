@@ -26,28 +26,23 @@ namespace DPA_Musicsheets
     /// </summary>
     public partial class MainWindow : Window
     {
-        private MidiPlayer _player;
-        public ObservableCollection<MidiTrack> MidiTracks { get; private set; }
-
         // De OutputDevice is een midi device of het midikanaal van je PC.
         // Hierop gaan we audio streamen.
         // DeviceID 0 is je audio van je PC zelf.
-        private OutputDevice _outputDevice = new OutputDevice(0);
+        private OutputDevice                    outputDevice = new OutputDevice(0);
+        private MidiPlayer                      player;
+        public ObservableCollection<MidiTrack>  MidiTracks { get; private set; }
 
         public MainWindow()
         {
             this.MidiTracks = new ObservableCollection<MidiTrack>();
+
             InitializeComponent();
             DataContext = MidiTracks;
-            //FillPSAMViewer();
-            //notenbalk.LoadFromXmlFile("Resources/example.xml");
         }
 
         private void FillPSAMViewer(Model.Score score)
         {
-            
-
-
             staff.ClearMusicalIncipit();
 
             // Clef = sleutel
@@ -88,39 +83,49 @@ namespace DPA_Musicsheets
             staff.AddMusicalSymbol(new Barline());
         }
 
-        private void btnPlay_Click(object sender, RoutedEventArgs e)
+        private void OnOpenButtonClick(object sender, RoutedEventArgs e)
         {
-            if(_player != null)
-            {
-                _player.Dispose();
-            }
-
-            _player = new MidiPlayer(_outputDevice);
-            _player.Play(txt_MidiFilePath.Text);
-        }
-
-        private void btnOpen_Click(object sender, RoutedEventArgs e)
-        {
-            OpenFileDialog openFileDialog = new OpenFileDialog() { Filter = "Midi Files(.mid)|*.mid" };
+            OpenFileDialog openFileDialog = new OpenFileDialog() { Filter = "Midi Files(.mid)|*.mid|LilyPond Files(.ly)|*.ly" };
             if (openFileDialog.ShowDialog() == true)
             {
-                txt_MidiFilePath.Text = openFileDialog.FileName;
+                // Show the file path in the text box.
+                FilePathTextBox.Text = openFileDialog.FileName;
 
-                // Load score and display for our viewing pleasure.
-                Model.Score score = ScoreBuilder.Instance.BuildScoreFromMidi(txt_MidiFilePath.Text);
-                FillPSAMViewer(score);
+                string extension = System.IO.Path.GetExtension(openFileDialog.FileName);
+
+                switch (extension)
+                {
+                    case ".mid":
+                        // Show the MIDI tracks content.
+                        ShowMidiTracks(MidiReader.ReadMidi(FilePathTextBox.Text));
+
+                        // Load score and display for our viewing pleasure.
+                        Model.Score score = ScoreBuilder.Instance.BuildScoreFromMidi(FilePathTextBox.Text);
+                        FillPSAMViewer(score);
+                        break;
+                    case ".ly":
+                        // Load the LilyPond.
+                        LilyPondBuilder.Instance.BuildLilyPondFromMidi(FilePathTextBox.Text);
+                        break;
+                }
             }
         }
-        
-        private void btn_Stop_Click(object sender, RoutedEventArgs e)
+
+        private void OnPlayButtonClick(object sender, RoutedEventArgs e)
         {
-            if (_player != null)
-                _player.Dispose();
+            if (player != null)
+            {
+                player.Dispose();
+            }
+
+            player = new MidiPlayer(outputDevice);
+            player.Play(FilePathTextBox.Text);
         }
 
-        private void btn_ShowContent_Click(object sender, RoutedEventArgs e)
+        private void OnStopButtonClick(object sender, RoutedEventArgs e)
         {
-            ShowMidiTracks(MidiReader.ReadMidi(txt_MidiFilePath.Text));
+            if (player != null)
+                player.Dispose();
         }
 
         private void ShowMidiTracks(IEnumerable<MidiTrack> midiTracks)
@@ -131,15 +136,15 @@ namespace DPA_Musicsheets
                 MidiTracks.Add(midiTrack);
             }
 
-            tabCtrl_MidiContent.SelectedIndex = 0;
+            ContentTabControl.SelectedIndex = 0;
         }
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void OnWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            _outputDevice.Close();
-            if (_player != null)
+            outputDevice.Close();
+            if (player != null)
             {
-                _player.Dispose();
+                player.Dispose();
             }
         }
     }
