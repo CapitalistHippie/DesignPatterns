@@ -36,8 +36,8 @@ namespace DPA_Musicsheets
                             var channelMessage = midiEvent.MidiMessage as ChannelMessage;
                             // Data1: De keycode. 0 = laagste C, 1 = laagste C#, 2 = laagste D etc.
                             // 160 is centrale C op piano.
-                            trackLog.Messages.Add(String.Format("Keycode: {0}, Command: {1}, absolute time: {2}, delta time: {3}"
-                                , channelMessage.Data1, channelMessage.Command, midiEvent.AbsoluteTicks, midiEvent.DeltaTicks));
+                            trackLog.Messages.Add(String.Format("Keycode: {0}, Command: {1}, Intensity: {4}, absolute time: {2}, delta time: {3}"
+                                 , channelMessage.Data1, channelMessage.Command, midiEvent.AbsoluteTicks, midiEvent.DeltaTicks, channelMessage.Data2));
                             break;
                         case MessageType.SystemExclusive:
                             break;
