@@ -12,6 +12,9 @@ namespace DPA_Musicsheets.Model
         HALF = 2,
         QUARTER = 4,
         EIGTH = 8,
-        SIXTEENTH = 16
+        SIXTEENTH = 16,
+        THIRTY_SECOND = 32,
+        SIXTY_FOURTH = 64,
+        HUNDRED_TWENTY_EIGHTH = 128
     }
 }
