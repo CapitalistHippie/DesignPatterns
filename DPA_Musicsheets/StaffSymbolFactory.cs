@@ -77,6 +77,11 @@ namespace DPA_Musicsheets
             }
         }
 
+        public StaffSymbol ConstructNote()
+        {
+            throw new NotImplementedException();
+        }
+
         public StaffSymbolDuration GetDuration(int duration)
         {
             if (durationDictionary.ContainsKey(duration))
