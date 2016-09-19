@@ -4,6 +4,7 @@ using Sanford.Multimedia.Midi;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -43,36 +44,22 @@ namespace DPA_Musicsheets
 
         private void FillPSAMViewer(Model.Score score)
         {
-            staff.ClearMusicalIncipit();
+            ScoreStackPanel.Children.Clear();
 
-            // Clef = sleutel
-            staff.AddMusicalSymbol(new Clef(ClefType.GClef, 2));
-            staff.AddMusicalSymbol(new TimeSignature(TimeSignatureType.Numbers, 4, 4));
-            /* 
-                The first argument of Note constructor is a string representing one of the following names of steps: A, B, C, D, E, F, G. 
-                The second argument is number of sharps (positive number) or flats (negative number) where 0 means no alteration. 
-                The third argument is the number of an octave. 
-                The next arguments are: duration of the note, stem direction and type of tie (NoteTieType.None if the note is not tied). 
-                The last argument is a list of beams. If the note doesn't have any beams, it must still have that list with just one 
-                    element NoteBeamType.Single (even if duration of the note is greater than eighth). 
-                    To make it clear how beamlists work, let's try to add a group of two beamed sixteenths and eighth:
-                        Note s1 = new Note("A", 0, 4, MusicalSymbolDuration.Sixteenth, NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Start, NoteBeamType.Start});
-                        Note s2 = new Note("C", 1, 5, MusicalSymbolDuration.Sixteenth, NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Continue, NoteBeamType.End });
-                        Note e = new Note("D", 0, 5, MusicalSymbolDuration.Eighth, NoteStemDirection.Down, NoteTieType.None,new List<NoteBeamType>() { NoteBeamType.End });
-                        viewer.AddMusicalSymbol(s1);
-                        viewer.AddMusicalSymbol(s2);
-                        viewer.AddMusicalSymbol(e); 
-            */
+            PSAMWPFControlLibrary.IncipitViewerWPF staff = new PSAMWPFControlLibrary.IncipitViewerWPF();
+            staff.Width = ScoreStackPanel.ActualWidth;
+            ScoreStackPanel.Children.Add(staff);
 
             int index = 1;
 
             foreach (Model.StaffSymbol symbol in score.Staves[1].Symbols)
             {
                 index++;
-                if (index > 10)
+                if (index % 10 == 0)
                 {
-                    
-                    //staff = new IncipitViewer();
+                    staff = new PSAMWPFControlLibrary.IncipitViewerWPF();
+                    staff.Width = ScoreStackPanel.ActualWidth;
+                    ScoreStackPanel.Children.Add(staff);
                 }
                 if (symbol is Model.Note)
                 {
@@ -138,12 +125,20 @@ namespace DPA_Musicsheets
             ContentTabControl.SelectedIndex = 0;
         }
 
-        private void OnWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void OnWindowClosing(object sender, CancelEventArgs e)
         {
             outputDevice.Close();
             if (player != null)
             {
                 player.Dispose();
+            }
+        }
+
+        private void OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            foreach (PSAMWPFControlLibrary.IncipitViewerWPF staff in ScoreStackPanel.Children)
+            {
+                staff.Width = ScoreStackPanel.ActualWidth;
             }
         }
     }
