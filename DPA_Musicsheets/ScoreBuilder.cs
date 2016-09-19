@@ -2,6 +2,7 @@
 using Sanford.Multimedia.Midi;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -193,6 +194,51 @@ namespace DPA_Musicsheets
                 score.Staves.Add(staff);
             }
 
+            return score;
+        }
+
+        public Score BuildScoreFromLilyPond(String filePath)
+        {
+            Score score = new Score();
+            Staff staff = new Staff();
+
+            string fileText = File.ReadAllText(filePath);
+            string[] tokens = fileText.Split(' ');
+
+            // Default relative note is c.
+            string relativeNote = "c";
+
+            char[] trimCharacters = new char[] { '\r', '\n' };
+
+            for (int i = 0; i < tokens.Length; i++)
+            {
+                switch (tokens[i])
+                {
+                    case "":
+                        break;
+                    case "\\relative":
+                        relativeNote = tokens[++i].Trim(trimCharacters);
+                        break;
+                    case "\\clef":
+                        staff.Symbols.Add(ClefFactory.Instance.ConstructFromLilyPondClef(tokens[++i].Trim(trimCharacters)));
+                        break;
+                    case "\\time":
+                        
+                        break;
+                    case "\\tempo":
+                        break;
+                    case "\\repeat":
+                        break;
+                    case "\alternative":
+                        break;
+                    default:
+
+
+                        break;
+                }
+            }
+
+            score.Staves.Add(staff);
             return score;
         }
     }

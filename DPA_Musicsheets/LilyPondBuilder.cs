@@ -22,11 +22,5 @@ namespace DPA_Musicsheets
         private LilyPondBuilder()
         {
         }
-
-        public void BuildLilyPondFromMidi(String filePath)
-        {
-            string fileText = File.ReadAllText(filePath);
-            string[] tokens = fileText.Split(' ');
-        }
     }
 }

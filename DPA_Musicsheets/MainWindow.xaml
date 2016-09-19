@@ -27,7 +27,7 @@
 
         <TabControl Grid.Row="1" Grid.ColumnSpan="4" Margin="0,10,0,0">
             <TabItem Header="Sheet">
-                <PSAMWPFControl:IncipitViewerWPF Margin="0,0,0,0" x:Name="staff" >
+                <PSAMWPFControl:IncipitViewerWPF Margin="0,0,0,0" x:Name="staff">
                 </PSAMWPFControl:IncipitViewerWPF>
             </TabItem>
 

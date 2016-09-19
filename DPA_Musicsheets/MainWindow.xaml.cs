@@ -66,7 +66,7 @@ namespace DPA_Musicsheets
 
             int index = 1;
 
-            foreach (DPA_Musicsheets.Model.StaffSymbol symbol in score.Staves[1].Symbols)
+            foreach (Model.StaffSymbol symbol in score.Staves[1].Symbols)
             {
                 index++;
                 if (index > 10)
@@ -74,28 +74,12 @@ namespace DPA_Musicsheets
                     
                     //staff = new IncipitViewer();
                 }
-                if (symbol is DPA_Musicsheets.Model.Note)
+                if (symbol is Model.Note)
                 {
-                    var note = (DPA_Musicsheets.Model.Note)symbol;
+                    var note = symbol as Model.Note;
                     staff.AddMusicalSymbol(new Note(note.StepString, note.Alter, note.Octave, StaffSymbolFactory.Instance.GetMusicalSymbolDuration(note.Duration), NoteStemDirection.Down, NoteTieType.Stop, new List<NoteBeamType>() { NoteBeamType.Single }));
                 }
             }
-
-            //staff.AddMusicalSymbol(new Note("A", 0, 4, MusicalSymbolDuration.Sixteenth, NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Start, NoteBeamType.Start }));
-            //staff.AddMusicalSymbol(new Note("C", 1, 5, MusicalSymbolDuration.Sixteenth, NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Continue, NoteBeamType.End }));
-            //staff.AddMusicalSymbol(new Note("D", 0, 5, MusicalSymbolDuration.Eighth, NoteStemDirection.Down, NoteTieType.Start, new List<NoteBeamType>() { NoteBeamType.End }));
-            //staff.AddMusicalSymbol(new Barline());
-
-            //staff.AddMusicalSymbol(new Note("D", 0, 5, MusicalSymbolDuration.Whole, NoteStemDirection.Down, NoteTieType.Stop, new List<NoteBeamType>() { NoteBeamType.Single }));
-            //staff.AddMusicalSymbol(new Note("E", 0, 4, MusicalSymbolDuration.Quarter, NoteStemDirection.Up, NoteTieType.Start, new List<NoteBeamType>() { NoteBeamType.Single }) { NumberOfDots = 1 });
-            //staff.AddMusicalSymbol(new Barline());
-
-            //staff.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Half, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }));
-            //staff.AddMusicalSymbol(
-            //    new Note("E", 0, 4, MusicalSymbolDuration.Half, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { IsChordElement = true });
-            //staff.AddMusicalSymbol(
-            //    new Note("G", 0, 4, MusicalSymbolDuration.Half, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { IsChordElement = true });
-            //staff.AddMusicalSymbol(new Barline());
         }
 
         private void OnOpenButtonClick(object sender, RoutedEventArgs e)
@@ -119,8 +103,8 @@ namespace DPA_Musicsheets
                         FillPSAMViewer(score);
                         break;
                     case ".ly":
-                        // Load the LilyPond.
-                        LilyPondBuilder.Instance.BuildLilyPondFromMidi(FilePathTextBox.Text);
+                        // Build a score from the LilyPond.
+                        ScoreBuilder.Instance.BuildScoreFromLilyPond(FilePathTextBox.Text);
                         break;
                 }
             }
