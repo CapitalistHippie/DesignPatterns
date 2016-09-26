@@ -69,6 +69,7 @@ namespace DPA_Musicsheets
                     ScoreStackPanel.Children.Add(staff);
                     staff.AddMusicalSymbol(new Clef(ClefType.GClef, 2));
                     staff.AddMusicalSymbol(new TimeSignature(TimeSignatureType.Numbers, 4, 4));
+                    
                 }
                 if (symbol is Model.Note)
                 {
