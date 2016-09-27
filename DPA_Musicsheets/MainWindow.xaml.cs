@@ -40,41 +40,81 @@ namespace DPA_Musicsheets
 
             InitializeComponent();
             DataContext = MidiTracks;
+            
         }
 
         private void FillPSAMViewer(Model.Score score)
         {
-            ScoreStackPanel.Children.Clear();
+            ContentSheetControl.Items.Clear();
 
-            PSAMWPFControlLibrary.IncipitViewerWPF staff = new PSAMWPFControlLibrary.IncipitViewerWPF();
-            //staff.Margin = staff.Margin.Top(10);
-            Thickness margin = staff.Margin;
-            margin.Top += 50;
-            staff.Margin = margin;
-            staff.Width = ScoreStackPanel.ActualWidth;
-            staff.AddMusicalSymbol(new Clef(ClefType.GClef, 2));
-            staff.AddMusicalSymbol(new TimeSignature(TimeSignatureType.Numbers, 4, 4));
-            ScoreStackPanel.Children.Add(staff);
+            Model.TimeSignature currentTimeSignature = null;
 
-            int index = 1;
+            foreach(Model.Staff stave in score.Staves) {
+                StackPanel scoreStackPanel = new StackPanel();
 
-            foreach (Model.StaffSymbol symbol in score.Staves[1].Symbols)
-            {
-                index++;
-                if (index % 10 == 0)
+                PSAMWPFControlLibrary.IncipitViewerWPF staff = new PSAMWPFControlLibrary.IncipitViewerWPF();
+
+                Thickness margin = staff.Margin;
+                margin.Top += 50;
+                staff.Margin = margin;
+                staff.Width = ContentSheetControl.ActualWidth;
+
+                scoreStackPanel.Children.Add(staff);
+
+                TabItem tab = new TabItem();
+                tab.Header = stave.StaffName;
+                tab.Content = scoreStackPanel;
+                ContentSheetControl.Items.Add(tab);
+
+                if (currentTimeSignature != null)
                 {
-                    staff = new PSAMWPFControlLibrary.IncipitViewerWPF();
-                    staff.Width = ScoreStackPanel.ActualWidth;
-
-                    ScoreStackPanel.Children.Add(staff);
                     staff.AddMusicalSymbol(new Clef(ClefType.GClef, 2));
-                    staff.AddMusicalSymbol(new TimeSignature(TimeSignatureType.Numbers, 4, 4));
-                    
+                    staff.AddMusicalSymbol(new TimeSignature(TimeSignatureType.Numbers, (uint)currentTimeSignature.Measure, (uint)currentTimeSignature.NumberOfBeats));
                 }
-                if (symbol is Model.Note)
+
+                int index = 1;
+
+                foreach (Model.StaffSymbol symbol in stave.Symbols)
                 {
-                    var note = symbol as Model.Note;
-                    staff.AddMusicalSymbol(new Note(note.StepString, note.Alter, note.Octave, StaffSymbolFactory.Instance.GetMusicalSymbolDuration(note.Duration), NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }));
+                    if (index >= 6)
+                    {
+                        index = 1;
+                        staff = new PSAMWPFControlLibrary.IncipitViewerWPF();
+                        staff.Width = ContentSheetControl.ActualWidth;
+
+                        scoreStackPanel.Children.Add(staff);
+                        if (currentTimeSignature != null)
+                        {
+                            staff.AddMusicalSymbol(new Clef(ClefType.GClef, 2));
+                            staff.AddMusicalSymbol(new TimeSignature(TimeSignatureType.Numbers, (uint)currentTimeSignature.Measure, (uint)currentTimeSignature.NumberOfBeats));
+                        }
+
+                    }
+                    if (symbol is Model.Note)
+                    {
+                        var note = symbol as Model.Note;
+                        //staff.
+
+                        if (note.Octave - 1 >= 5)
+                        {
+                            staff.AddMusicalSymbol(new Note(note.StepString, note.Alter, note.Octave - 1, StaffSymbolFactory.Instance.GetMusicalSymbolDuration(note.Duration), NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }));
+                        }
+                        else
+                        {
+                            staff.AddMusicalSymbol(new Note(note.StepString, note.Alter, note.Octave - 1, StaffSymbolFactory.Instance.GetMusicalSymbolDuration(note.Duration), NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }));
+                        }
+                    }
+                    if (symbol is Model.Barline)
+                    {
+                        staff.AddMusicalSymbol(new Barline());
+                        index++;
+                    }
+                    if (symbol is Model.TimeSignature)
+                    {
+                        currentTimeSignature = symbol as Model.TimeSignature;
+                        staff.AddMusicalSymbol(new Clef(ClefType.GClef, 2));
+                        staff.AddMusicalSymbol(new TimeSignature(TimeSignatureType.Numbers, (uint) currentTimeSignature.Measure, (uint) currentTimeSignature.NumberOfBeats));
+                    }
                 }
             }
         }
@@ -146,10 +186,10 @@ namespace DPA_Musicsheets
 
         private void OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            foreach (PSAMWPFControlLibrary.IncipitViewerWPF staff in ScoreStackPanel.Children)
-            {
-                staff.Width = ScoreStackPanel.ActualWidth;
-            }
+            //foreach (PSAMWPFControlLibrary.IncipitViewerWPF staff in ScoreStackPanel.Children)
+            //{
+            //    staff.Width = ScoreStackPanel.ActualWidth;
+            //}
         }
     }
 }

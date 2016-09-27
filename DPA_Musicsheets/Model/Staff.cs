@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,11 +15,11 @@ namespace DPA_Musicsheets.Model
 
         public string InstrumentName { get; set; }
 
-        public List<StaffSymbol> Symbols { get; set; }
+        public ObservableCollection<StaffSymbol> Symbols { get; set; }
 
         public Staff()
         {
-            Symbols = new List<StaffSymbol>();
+            Symbols = new ObservableCollection<StaffSymbol>();
         }
     }
 }

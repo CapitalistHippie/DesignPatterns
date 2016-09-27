@@ -12,7 +12,8 @@ namespace DPA_Musicsheets
     public class ScoreBuilder
     {
         private static ScoreBuilder instance;
-        
+        private double currentDuration = 0;
+        private int currentAbsoluteTicksNote = 0;
 
         public static ScoreBuilder Instance
         {
@@ -65,7 +66,15 @@ namespace DPA_Musicsheets
                             // Note already exists, setNoteDuration
                             if (StaffSymbolFactory.Instance.ContainsNoteKey(keyCode) && (channelMessage.Data2 == 0 || channelMessage.Command == ChannelCommand.NoteOff))
                             {
-                                StaffSymbolFactory.Instance.SetNoteDuration(keyCode, midiEvent, ticksPerBeat, timeSignature);
+                                double noteDuration = StaffSymbolFactory.Instance.SetNoteDuration(keyCode, midiEvent, ticksPerBeat, timeSignature);
+                                //if(currentAbsoluteTicksNote != )
+                                currentDuration += noteDuration;
+                                //currentAbsoluteTicksNote
+                                if (currentDuration >= 1) // temp very dirty solution
+                                {
+                                    staff.Symbols.Add(new Barline());
+                                    currentDuration = 0;
+                                }
                             }
                             // Create new Note
                             else if (channelMessage.Command == ChannelCommand.NoteOn && channelMessage.Data2 > 0)
@@ -93,7 +102,7 @@ namespace DPA_Musicsheets
                             switch (metaMessage.MetaType)
                             {
                                 case MetaType.TrackName:
-                                    staff.StaffName = Encoding.Default.GetString(metaMessage.GetBytes());
+                                    staff.StaffName = i + " " + Encoding.Default.GetString(metaMessage.GetBytes());
                                     break;
                                 case MetaType.InstrumentName:
                                     staff.InstrumentName = Encoding.Default.GetString(metaMessage.GetBytes());
@@ -113,7 +122,10 @@ namespace DPA_Musicsheets
                             break;
                     }
                 }
-
+                if (staff.StaffName == null)
+                {
+                    staff.StaffName = i.ToString();
+                }
                 score.Staves.Add(staff);
             }
 

@@ -15,6 +15,7 @@ namespace DPA_Musicsheets
         private Dictionary<StaffSymbolDuration, PSAMControlLibrary.MusicalSymbolDuration> psamConvertDictionary;
         private Dictionary<int, String> keycodeDictionary;
         private Dictionary<int, Note> keyNoteMap;
+        
 
         public static StaffSymbolFactory Instance
         {
@@ -78,7 +79,7 @@ namespace DPA_Musicsheets
                 case MetaType.TimeSignature:
                     TimeSignature timeSignature = new TimeSignature();
                     timeSignature.Measure = bytes[0];
-                    timeSignature.NumberOfBeats = (int)(1 / Math.Pow(bytes[1], -2));
+                    timeSignature.NumberOfBeats = (int)Math.Pow(2, bytes[1]); // fix
 
                     return timeSignature;
                 case MetaType.Tempo:
@@ -101,7 +102,7 @@ namespace DPA_Musicsheets
             return keyNoteMap.ContainsKey(keyCode);
         }
 
-        public void SetNoteDuration(int keyCode, MidiEvent midiEvent, int ticksPerBeat, TimeSignature timeSignature)
+        public double SetNoteDuration(int keyCode, MidiEvent midiEvent, int ticksPerBeat, TimeSignature timeSignature)
         {
             Note note = keyNoteMap[keyCode];
 
@@ -135,12 +136,15 @@ namespace DPA_Musicsheets
             
             int realDuration = (int)(1d / noteDuration);
             note.Duration = StaffSymbolFactory.Instance.GetDuration(realDuration);
+            
             keyNoteMap.Remove(keyCode);
 
             if (note == null)
             {
                 Console.WriteLine("fuuuu");
             }
+
+            return noteDuration;
             //staff.Symbols.Add(note); //Temporary Cheat
         }
 
