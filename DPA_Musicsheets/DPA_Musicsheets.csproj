@@ -68,12 +68,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Model\Barline.cs" />
+    <Compile Include="Model\LilyPondStaffAdapter.cs" />
     <Compile Include="MidiTrack.cs" />
     <Compile Include="Model\Clef.cs" />
     <Compile Include="Model\Tempo.cs" />
     <Compile Include="Model\Score.cs" />
-    <Compile Include="LilyPondBuilder.cs" />
-    <Compile Include="ClefFactory.cs" />
     <Compile Include="StaffSymbolFactory.cs" />
     <Compile Include="ScoreBuilder.cs" />
     <Page Include="MainWindow.xaml">

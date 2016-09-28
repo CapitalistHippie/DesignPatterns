@@ -200,41 +200,60 @@ namespace DPA_Musicsheets
         public Score BuildScoreFromLilyPond(String filePath)
         {
             Score score = new Score();
-            Staff staff = new Staff();
+            LilyPondStaffAdapter staff = new LilyPondStaffAdapter();
 
             string fileText = File.ReadAllText(filePath);
-            string[] tokens = fileText.Split(' ');
+            string[] tokens = fileText.Split(new string[] { " ", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
 
             // Default relative note is c.
             string relativeNote = "c";
 
-            char[] trimCharacters = new char[] { '\r', '\n' };
-
             for (int i = 0; i < tokens.Length; i++)
             {
-                switch (tokens[i])
+                // Ignore empty lines.
+                //if (tokens[i] == "")
+                //    continue;
+                if (tokens[i].StartsWith("\\"))
                 {
-                    case "":
-                        break;
-                    case "\\relative":
-                        relativeNote = tokens[++i].Trim(trimCharacters);
-                        break;
-                    case "\\clef":
-                        staff.Symbols.Add(ClefFactory.Instance.ConstructFromLilyPondClef(tokens[++i].Trim(trimCharacters)));
-                        break;
-                    case "\\time":
-                        
-                        break;
-                    case "\\tempo":
-                        break;
-                    case "\\repeat":
-                        break;
-                    case "\alternative":
-                        break;
-                    default:
-
-
-                        break;
+                    string key = tokens[i].Substring(1);
+                    switch (key)
+                    {
+                        case "relative":
+                            string relativeNoteValue = tokens[++i];
+                            relativeNote = relativeNoteValue;
+                            break;
+                        case "clef":
+                            string cleffValue = tokens[++i];
+                            staff.AddClef(cleffValue);
+                            break;
+                        case "time":
+                            string timeValue = tokens[++i];
+                            staff.AddTimeSignature(timeValue);
+                            break;
+                        case "tempo":
+                            string tempoValue = tokens[++i];
+                            staff.AddTempo(tempoValue);
+                            break;
+                        case "repeat":
+                            string repeatType = tokens[++i];
+                            switch (repeatType)
+                            {
+                                case "volta":
+                                    int repeatCount = int.Parse(tokens[++i]);
+                                    staff.Symbols.Add(new Repeat { Type = RepeatType.FORWARD });
+                                    break;
+                            }
+                            break;
+                        case "alternative":
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                else
+                {
+                    if (tokens[i] == "|")
+                        staff.Symbols.Add(new Barline());
                 }
             }
 
