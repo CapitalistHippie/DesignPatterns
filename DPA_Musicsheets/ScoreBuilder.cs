@@ -43,6 +43,8 @@ namespace DPA_Musicsheets
             Tempo tempo = null;
             TimeSignature timeSignature = null;
 
+            bool firstTimeSignature = true;
+
             //Create a new staff for each track in the sequence.
             for (int i = 0; i < midiSequence.Count; i++)
             {
@@ -112,8 +114,22 @@ namespace DPA_Musicsheets
                                     staff.Symbols.Add(tempo);
                                     break;
                                 case MetaType.TimeSignature:
-                                    timeSignature = (TimeSignature)StaffSymbolFactory.Instance.ConstructSymbol(metaMessage);
-                                    staff.Symbols.Add(timeSignature);
+                                    if (i == 0) // Control Track
+                                    {
+                                        if (firstTimeSignature)
+                                        {
+                                            timeSignature = (TimeSignature)StaffSymbolFactory.Instance.ConstructSymbol(metaMessage);
+                                            staff.Symbols.Add(timeSignature);
+                                            firstTimeSignature = false;
+                                        }
+                                        // else skip these frigging false timeSignatures disrupting time and space
+                                    }
+                                    else
+                                    {
+                                        timeSignature = (TimeSignature)StaffSymbolFactory.Instance.ConstructSymbol(metaMessage);
+                                        staff.Symbols.Add(timeSignature);
+                                        firstTimeSignature = false;
+                                    }
                                     break;
                                 default:
                                     staff.Symbols.Add(StaffSymbolFactory.Instance.ConstructSymbol(metaMessage));

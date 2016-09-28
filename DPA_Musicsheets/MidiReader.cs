@@ -77,7 +77,7 @@ namespace DPA_Musicsheets
                 //case MetaType.SmpteOffset:
                 //    break;
                 case MetaType.TimeSignature:                               //kwart = 1 / 0.25 = 4
-                    return metaMessage.MetaType + ": (" + bytes[0] + " / " + 1 / Math.Pow(bytes[1], -2) + ") ";
+                    return metaMessage.MetaType + ": (" + bytes[0] + " / " + Math.Pow(2, bytes[1]) + ") "; // fix
                 //case MetaType.KeySignature:
                 //    break;
                 //case MetaType.ProprietaryEvent:

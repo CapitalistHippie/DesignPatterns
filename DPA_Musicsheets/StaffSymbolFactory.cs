@@ -136,21 +136,27 @@ namespace DPA_Musicsheets
                     break;
                 }
             }
-            // if noteDuration = -1 throw error
-
-            double noteLeft = percentageOfWholeNote % noteDuration; // TODO do something with this
-            
-            int convertDuration = (int)(1d / noteDuration);
-            note.Duration = StaffSymbolFactory.Instance.GetDuration(convertDuration);
-            
-            keyNoteMap.Remove(keyCode);
-
-            if (note == null)
+            if (noteDuration != -1) //temp
             {
-                Console.WriteLine("fuuuu");
+                double noteLeft = percentageOfWholeNote % noteDuration; // TODO do something with this
+            
+                int convertDuration = (int)(1d / noteDuration);
+                note.Duration = StaffSymbolFactory.Instance.GetDuration(convertDuration);
+            
+                keyNoteMap.Remove(keyCode);
+
+                if (note == null)
+                {
+                    Console.WriteLine("fuuuu");
+                }
+                return realDuration;
+            }
+            else
+            {
+                return 0; //temp
             }
 
-            return realDuration;
+
             //staff.Symbols.Add(note); //Temporary Cheat
         }
 
