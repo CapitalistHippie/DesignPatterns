@@ -15,5 +15,10 @@ namespace DPA_Musicsheets.Model
         public StaffSymbolDuration Duration { get; set; }
         public int NumberOfDots { get; set; }
         public int StartTime { get; set; }
+
+        public Note()
+        {
+            NumberOfDots = 0; //default value derp
+        }
     }
 }

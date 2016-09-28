@@ -113,6 +113,7 @@ namespace DPA_Musicsheets
             double percentageOfWholeNote = percentageOfBeatNote * (1d / timeSignature.Measure);
 
             double noteDuration = -1;
+            double realDuration = -1;
 
             // Find the first note with the appropriate duration that fits as closely as possible
             for (int noteLength = 128; noteLength >= 1; noteLength /= 2)
@@ -121,21 +122,26 @@ namespace DPA_Musicsheets
 
                 if (percentageOfWholeNote <= absoluteNoteLength)
                 {
-                    noteDuration = absoluteNoteLength; // note with dot
+                    noteDuration = absoluteNoteLength;
+                    if (percentageOfWholeNote <= absoluteNoteLength / 2 * 1.5)
+                    {
+                        realDuration = absoluteNoteLength / 2 * 1.5; // note with dot
+                        noteDuration = absoluteNoteLength / 2;
+                        note.NumberOfDots = 1;
+                    }
+                    else
+                    {
+                        realDuration = noteDuration;
+                    }
                     break;
                 }
-                //else if (percentageOfWholeNote <= absoluteNoteLength * 1.5) // NEED SMART SOLUTION
-                //{
-                //    noteDuration = absoluteNoteLength * 1.5; // note without dot
-                //    break;
-                //}
             }
             // if noteDuration = -1 throw error
 
             double noteLeft = percentageOfWholeNote % noteDuration; // TODO do something with this
             
-            int realDuration = (int)(1d / noteDuration);
-            note.Duration = StaffSymbolFactory.Instance.GetDuration(realDuration);
+            int convertDuration = (int)(1d / noteDuration);
+            note.Duration = StaffSymbolFactory.Instance.GetDuration(convertDuration);
             
             keyNoteMap.Remove(keyCode);
 
@@ -144,7 +150,7 @@ namespace DPA_Musicsheets
                 Console.WriteLine("fuuuu");
             }
 
-            return noteDuration;
+            return realDuration;
             //staff.Symbols.Add(note); //Temporary Cheat
         }
 

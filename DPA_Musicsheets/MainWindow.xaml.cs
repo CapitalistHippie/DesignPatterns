@@ -50,7 +50,10 @@ namespace DPA_Musicsheets
             Model.TimeSignature currentTimeSignature = null;
 
             foreach(Model.Staff stave in score.Staves) {
-                StackPanel scoreStackPanel = new StackPanel();
+                ScrollViewer scrollViewer = new ScrollViewer();
+                StackPanel scoreStackPanel = new StackPanel(); // TODO fix width
+                
+                scrollViewer.Content = scoreStackPanel;
 
                 PSAMWPFControlLibrary.IncipitViewerWPF staff = new PSAMWPFControlLibrary.IncipitViewerWPF();
 
@@ -63,7 +66,7 @@ namespace DPA_Musicsheets
 
                 TabItem tab = new TabItem();
                 tab.Header = stave.StaffName;
-                tab.Content = scoreStackPanel;
+                tab.Content = scrollViewer;
                 ContentSheetControl.Items.Add(tab);
 
                 if (currentTimeSignature != null)
@@ -97,11 +100,11 @@ namespace DPA_Musicsheets
 
                         if (note.Octave - 1 >= 5)
                         {
-                            staff.AddMusicalSymbol(new Note(note.StepString, note.Alter, note.Octave - 1, StaffSymbolFactory.Instance.GetMusicalSymbolDuration(note.Duration), NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }));
+                            staff.AddMusicalSymbol(new Note(note.StepString, note.Alter, note.Octave - 1, StaffSymbolFactory.Instance.GetMusicalSymbolDuration(note.Duration), NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { NumberOfDots = note.NumberOfDots });
                         }
                         else
                         {
-                            staff.AddMusicalSymbol(new Note(note.StepString, note.Alter, note.Octave - 1, StaffSymbolFactory.Instance.GetMusicalSymbolDuration(note.Duration), NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }));
+                            staff.AddMusicalSymbol(new Note(note.StepString, note.Alter, note.Octave - 1, StaffSymbolFactory.Instance.GetMusicalSymbolDuration(note.Duration), NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { NumberOfDots = note.NumberOfDots });
                         }
                     }
                     if (symbol is Model.Barline)
@@ -117,6 +120,22 @@ namespace DPA_Musicsheets
                     }
                 }
             }
+            //staff.AddMusicalSymbol(new Note("A", 0, 4, MusicalSymbolDuration.Sixteenth, NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Start, NoteBeamType.Start }));
+            //staff.AddMusicalSymbol(new Note("C", 1, 5, MusicalSymbolDuration.Sixteenth, NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Continue, NoteBeamType.End }));
+            //staff.AddMusicalSymbol(new Note("D", 0, 5, MusicalSymbolDuration.Eighth, NoteStemDirection.Down, NoteTieType.Start, new List<NoteBeamType>() { NoteBeamType.End }));
+            //staff.AddMusicalSymbol(new Barline());
+
+            //staff.AddMusicalSymbol(new Note("D", 0, 5, MusicalSymbolDuration.Whole, NoteStemDirection.Down, NoteTieType.Stop, new List<NoteBeamType>() { NoteBeamType.Single }));
+            //staff.AddMusicalSymbol(new Note("E", 0, 4, MusicalSymbolDuration.Quarter, NoteStemDirection.Up, NoteTieType.Start, new List<NoteBeamType>() { NoteBeamType.Single }) { NumberOfDots = 1 });
+            //staff.AddMusicalSymbol(new Barline());
+
+            //staff.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Half, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }));
+            //staff.AddMusicalSymbol(
+            //    new Note("E", 0, 4, MusicalSymbolDuration.Half, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { IsChordElement = true });
+            //staff.AddMusicalSymbol(
+            //    new Note("G", 0, 4, MusicalSymbolDuration.Half, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { IsChordElement = true });
+            //staff.AddMusicalSymbol(new Barline());
+
         }
 
         private void OnOpenButtonClick(object sender, RoutedEventArgs e)
