@@ -27,9 +27,8 @@
 
         <TabControl Grid.Row="1" Grid.ColumnSpan="4" Margin="0,10,0,0">
             <TabItem Header="Sheet">
-                <ScrollViewer>
-                    <StackPanel x:Name="ScoreStackPanel" />
-                </ScrollViewer>
+                <TabControl x:Name="ContentSheetControl">
+                </TabControl>
             </TabItem>
 
             <TabItem Header="Content">

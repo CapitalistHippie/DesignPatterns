@@ -13,6 +13,9 @@ namespace DPA_Musicsheets
         private static StaffSymbolFactory instance;
         private Dictionary<int, StaffSymbolDuration> durationDictionary;
         private Dictionary<StaffSymbolDuration, PSAMControlLibrary.MusicalSymbolDuration> psamConvertDictionary;
+        private Dictionary<int, String> keycodeDictionary;
+        private Dictionary<int, Note> keyNoteMap;
+        
 
         public static StaffSymbolFactory Instance
         {
@@ -48,6 +51,23 @@ namespace DPA_Musicsheets
                 { StaffSymbolDuration.SIXTY_FOURTH, PSAMControlLibrary.MusicalSymbolDuration.d64th },
                 { StaffSymbolDuration.HUNDRED_TWENTY_EIGHTH, PSAMControlLibrary.MusicalSymbolDuration.d128th }
             };
+            keycodeDictionary = new Dictionary<int, string>
+            {
+                {0, "C"},
+                {1, "C#"},
+                {2, "D"},
+                {3, "D#"},
+                {4, "E"},
+                {5, "F"},
+                {6, "F#"},
+                {7, "G"},
+                {8, "G#"},
+                {9, "A"},
+                {10, "A#"},
+                {11, "B"},
+            };
+
+            keyNoteMap = new Dictionary<int, Note>();
         }
 
         public StaffSymbol ConstructSymbol(MetaMessage metaMessage)
@@ -59,7 +79,7 @@ namespace DPA_Musicsheets
                 case MetaType.TimeSignature:
                     TimeSignature timeSignature = new TimeSignature();
                     timeSignature.Measure = bytes[0];
-                    timeSignature.NumberOfBeats = (int)(1 / Math.Pow(bytes[1], -2));
+                    timeSignature.NumberOfBeats = (int)Math.Pow(2, bytes[1]); // fix
 
                     return timeSignature;
                 case MetaType.Tempo:
@@ -77,9 +97,104 @@ namespace DPA_Musicsheets
             }
         }
 
-        public StaffSymbol ConstructNote()
+        public bool ContainsNoteKey(int keyCode)
         {
-            throw new NotImplementedException();
+            return keyNoteMap.ContainsKey(keyCode);
+        }
+
+        public double SetNoteDuration(int keyCode, MidiEvent midiEvent, int ticksPerBeat, TimeSignature timeSignature)
+        {
+            Note note = keyNoteMap[keyCode];
+
+            int deltaTicks = midiEvent.AbsoluteTicks - note.StartTime;
+
+            // Get the note duration and length.
+            double percentageOfBeatNote = (double)deltaTicks / ticksPerBeat;
+            double percentageOfWholeNote = percentageOfBeatNote * (1d / timeSignature.Measure);
+
+            double noteDuration = -1;
+            double realDuration = -1;
+
+            // Find the first note with the appropriate duration that fits as closely as possible
+            for (int noteLength = 128; noteLength >= 1; noteLength /= 2)
+            {
+                double absoluteNoteLength = (1.0 / noteLength);
+
+                if (percentageOfWholeNote <= absoluteNoteLength)
+                {
+                    noteDuration = absoluteNoteLength;
+                    if (percentageOfWholeNote <= absoluteNoteLength / 2 * 1.5)
+                    {
+                        realDuration = absoluteNoteLength / 2 * 1.5; // note with dot
+                        noteDuration = absoluteNoteLength / 2;
+                        note.NumberOfDots = 1;
+                    }
+                    else
+                    {
+                        realDuration = noteDuration;
+                    }
+                    break;
+                }
+            }
+            if (noteDuration != -1) //temp
+            {
+                double noteLeft = percentageOfWholeNote % noteDuration; // TODO do something with this
+            
+                int convertDuration = (int)(1d / noteDuration);
+                note.Duration = StaffSymbolFactory.Instance.GetDuration(convertDuration);
+            
+                keyNoteMap.Remove(keyCode);
+
+                if (note == null)
+                {
+                    Console.WriteLine("fuuuu");
+                }
+                return realDuration;
+            }
+            else
+            {
+                return 0; //temp
+            }
+
+
+            //staff.Symbols.Add(note); //Temporary Cheat
+        }
+
+        public StaffSymbol ConstructNote(int keyCode, MidiEvent midiEvent)
+        {
+            if (!keyNoteMap.ContainsKey(keyCode))
+            {
+                Note note = new Note();
+                note.StartTime = midiEvent.AbsoluteTicks;
+
+                int keyCodeStep = keyCode % 12;
+                int octave = keyCode / 12;
+
+                note.Step = keyCodeStep;
+                note.Octave = octave;
+
+                // Get Note Alter (Sharps)
+                int alter = 0;
+                if (keycodeDictionary[keyCodeStep].Contains("#"))
+                {
+                    alter++;
+                    note.StepString = keycodeDictionary[keyCodeStep - 1];
+                }
+                else
+                {
+                    note.StepString = keycodeDictionary[keyCodeStep];
+                }
+                note.Alter = alter;
+
+                keyNoteMap.Add(keyCode, note);
+
+                return note;
+            }
+            else
+            {
+                Console.WriteLine("Need solution! Maybe ignore this one because it's part of the same note? Check Absolute time");
+                return null;
+            }
         }
 
         public StaffSymbolDuration GetDuration(int duration)

@@ -71,6 +71,7 @@
     <Compile Include="Model\Barline.cs" />
     <Compile Include="Model\LilyPondStaffAdapter.cs" />
     <Compile Include="MidiTrack.cs" />
+    <Compile Include="Model\Barline.cs" />
     <Compile Include="Model\Clef.cs" />
     <Compile Include="Model\Tempo.cs" />
     <Compile Include="Model\Score.cs" />
