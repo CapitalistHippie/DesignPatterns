@@ -12,8 +12,7 @@ namespace DPA_Musicsheets
     public class ScoreBuilder
     {
         private static ScoreBuilder instance;
-        private double currentDuration = 0;
-        private int currentAbsoluteTicksNote = 0;
+        
 
         public static ScoreBuilder Instance
         {
@@ -32,6 +31,8 @@ namespace DPA_Musicsheets
 
         public Score BuildScoreFromMidi(String filePath)
         {
+            double currentDuration = 0;
+            int currentAbsoluteTicksNote = 0;
             Score score = new Score();
                
             // Read the MIDI sequence.

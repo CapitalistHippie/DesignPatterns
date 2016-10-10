@@ -49,79 +49,148 @@ namespace DPA_Musicsheets
 
             Model.TimeSignature currentTimeSignature = null;
 
-            foreach(Model.Staff stave in score.Staves) {
+            foreach(Model.Staff staff in score.Staves) {
                 ScrollViewer scrollViewer = new ScrollViewer();
                 StackPanel scoreStackPanel = new StackPanel(); // TODO fix width
                 
                 scrollViewer.Content = scoreStackPanel;
 
-                PSAMWPFControlLibrary.IncipitViewerWPF staff = new PSAMWPFControlLibrary.IncipitViewerWPF();
+                PSAMWPFControlLibrary.IncipitViewerWPF incipitViewer = new PSAMWPFControlLibrary.IncipitViewerWPF();
 
-                
-
-                Thickness margin = staff.Margin;
+                Thickness margin = incipitViewer.Margin;
                 margin.Top += 50;
-                staff.Margin = margin;
-                staff.Width = ContentSheetControl.ActualWidth;
+                incipitViewer.Margin = margin;
+                incipitViewer.Width = ContentSheetControl.ActualWidth;
 
-                scoreStackPanel.Children.Add(staff);
+                scoreStackPanel.Children.Add(incipitViewer);
 
                 TabItem tab = new TabItem();
-                tab.Header = stave.StaffName;
+                tab.Header = staff.StaffName;
                 tab.Content = scrollViewer;
                 ContentSheetControl.Items.Add(tab);
 
                 if (currentTimeSignature != null)
                 {
-                    staff.AddMusicalSymbol(new Clef(ClefType.GClef, 2));
-                    staff.AddMusicalSymbol(new TimeSignature(TimeSignatureType.Numbers, (uint)currentTimeSignature.Measure, (uint)currentTimeSignature.NumberOfBeats));
+                    incipitViewer.AddMusicalSymbol(new Clef(ClefType.GClef, 2));
+                    incipitViewer.AddMusicalSymbol(new TimeSignature(TimeSignatureType.Numbers, (uint)currentTimeSignature.Measure, (uint)currentTimeSignature.NumberOfBeats));
                 }
+
+                
 
                 int index = 1;
 
-                foreach (Model.StaffSymbol symbol in stave.Symbols)
+                bool continueNoteBeam = false;
+                int amountNoteBeams = 1;
+
+                NoteStemDirection noteStemDirection = NoteStemDirection.Up; // default
+
+                for (int i = 0; i < staff.Symbols.Count; i++)
                 {
+                    Model.StaffSymbol symbol = staff.Symbols[i];
                     if (index >= 6)
                     {
                         index = 1;
-                        staff = new PSAMWPFControlLibrary.IncipitViewerWPF();
-                        staff.Width = ContentSheetControl.ActualWidth;
+                        incipitViewer = new PSAMWPFControlLibrary.IncipitViewerWPF();
+                        incipitViewer.Width = ContentSheetControl.ActualWidth;
 
-                        scoreStackPanel.Children.Add(staff);
+                        scoreStackPanel.Children.Add(incipitViewer);
                         if (currentTimeSignature != null)
                         {
-                            staff.AddMusicalSymbol(new Clef(ClefType.GClef, 2));
-                            staff.AddMusicalSymbol(new TimeSignature(TimeSignatureType.Numbers, (uint)currentTimeSignature.Measure, (uint)currentTimeSignature.NumberOfBeats));
+                            incipitViewer.AddMusicalSymbol(new Clef(ClefType.GClef, 2));
+                            incipitViewer.AddMusicalSymbol(new TimeSignature(TimeSignatureType.Numbers, (uint)currentTimeSignature.Measure, (uint)currentTimeSignature.NumberOfBeats));
                         }
 
                     }
-                    if (symbol is Model.Note)
+                    if (symbol is Model.Note) // TODO Visitor pattern
                     {
-                        var note = symbol as Model.Note;
-                        //staff.
-                        if (note.Duration != 0) //TODO temp
+                        var currentNote = symbol as Model.Note; // Visitor pattern instead
+
+                        NoteTieType noteTieType = NoteTieType.None; // TODO later
+                        NoteBeamType noteBeamType = NoteBeamType.Single; // default
+                        
+                        bool chord = false; // IsChord
+
+                        if (!continueNoteBeam)
                         {
-                            if (note.Octave - 1 >= 5)
+                            if (currentNote.Octave - 1 >= 5)
                             {
-                                staff.AddMusicalSymbol(new Note(note.StepString, note.Alter, note.Octave - 1, StaffSymbolFactory.Instance.GetMusicalSymbolDuration(note.Duration), NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { NumberOfDots = note.NumberOfDots });
+                                noteStemDirection = NoteStemDirection.Down;
                             }
                             else
                             {
-                                staff.AddMusicalSymbol(new Note(note.StepString, note.Alter, note.Octave - 1, StaffSymbolFactory.Instance.GetMusicalSymbolDuration(note.Duration), NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { NumberOfDots = note.NumberOfDots });
+                                noteStemDirection = NoteStemDirection.Up;
                             }
                         }
 
+
+
+                        Model.StaffSymbol nextSymbol = staff.Symbols[i+1];
+
+                        if (nextSymbol is Model.Note)
+                        {
+                            var nextNote = nextSymbol as Model.Note;
+
+                            if (continueNoteBeam)
+                            {
+                                if (amountNoteBeams >= 3)
+                                {
+                                    noteBeamType = NoteBeamType.End;
+                                    amountNoteBeams = 1;
+                                    continueNoteBeam = false;
+                                }
+                                else if (nextNote.Duration == currentNote.Duration)
+                                {
+                                    noteBeamType = NoteBeamType.Continue;
+                                    amountNoteBeams++;
+                                }
+                                else
+                                {
+                                    noteBeamType = NoteBeamType.End;
+                                    amountNoteBeams = 1;
+                                    continueNoteBeam = false;
+                                }
+                            }
+                            else
+                            {
+                                if (nextNote.Duration == currentNote.Duration && 
+                                    StaffSymbolFactory.Instance.GetIntDuration(currentNote.Duration) > 4) // everything with a shorter duration than quarter notes uses beams, quarter and higher don't
+                                {
+                                    noteBeamType = NoteBeamType.Start;
+                                    continueNoteBeam = true;
+                                }
+                            }
+
+                            if (nextNote.StartTime == currentNote.StartTime)
+                            {
+                                chord = true;
+                            }
+                        }
+                        else if (continueNoteBeam)
+                        {
+                            noteBeamType = NoteBeamType.End;
+                            amountNoteBeams = 1;
+                            continueNoteBeam = false;
+                        }
+
+                        //staff.
+                        if (currentNote.Duration != 0) //TODO temp, dirteh (to avoid errors for now)
+                        {
+                            //incipitViewer.AddMusicalSymbol(new Note(currentNote.StepString, currentNote.Alter, currentNote.Octave - 1, StaffSymbolFactory.Instance.GetMusicalSymbolDuration(currentNote.Duration), noteStemDirection, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { NumberOfDots = currentNote.NumberOfDots, IsChordElement = chord });
+                            incipitViewer.AddMusicalSymbol(new Note(currentNote.StepString, currentNote.Alter, currentNote.Octave - 1, StaffSymbolFactory.Instance.GetMusicalSymbolDuration(currentNote.Duration), noteStemDirection, NoteTieType.None, new List<NoteBeamType>() { noteBeamType }) { NumberOfDots = currentNote.NumberOfDots, IsChordElement = chord });
+                        }
+
                     }
-                    if (symbol is Model.Barline)
+                    if (symbol is Model.Barline) // Visitor pattern
                     {
-                        staff.AddMusicalSymbol(new Barline());
+                        incipitViewer.AddMusicalSymbol(new Barline());
                         index++;
                     }
-                    if (symbol is Model.TimeSignature)
+                    if (symbol is Model.TimeSignature) // Visitor pattern
                     {
+
                         currentTimeSignature = symbol as Model.TimeSignature;
-                        staff.AddMusicalSymbol(new Clef(ClefType.GClef, 2));
-                        staff.AddMusicalSymbol(new TimeSignature(TimeSignatureType.Numbers, (uint) currentTimeSignature.Measure, (uint) currentTimeSignature.NumberOfBeats));
+                        incipitViewer.AddMusicalSymbol(new Clef(ClefType.GClef, 2));
+                        incipitViewer.AddMusicalSymbol(new TimeSignature(TimeSignatureType.Numbers, (uint) currentTimeSignature.Measure, (uint) currentTimeSignature.NumberOfBeats));
                     }
                 }
             }
@@ -151,6 +220,16 @@ namespace DPA_Musicsheets
             staffTest.AddMusicalSymbol(new Note("A", 0, 4, MusicalSymbolDuration.Sixteenth, NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Start, NoteBeamType.Start }));
             staffTest.AddMusicalSymbol(new Note("C", 1, 5, MusicalSymbolDuration.Sixteenth, NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Continue, NoteBeamType.End }));
             staffTest.AddMusicalSymbol(new Note("D", 0, 5, MusicalSymbolDuration.Eighth, NoteStemDirection.Down, NoteTieType.Start, new List<NoteBeamType>() { NoteBeamType.End }));
+            staffTest.AddMusicalSymbol(new Note("A", 0, 4, MusicalSymbolDuration.Sixteenth, NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Start }));
+            //staffTest.AddMusicalSymbol(new Note("A", 0, 4, MusicalSymbolDuration.Sixteenth, NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Continue }));
+            //staffTest.AddMusicalSymbol(new Note("A", 0, 4, MusicalSymbolDuration.Sixteenth, NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Continue }));
+            staffTest.AddMusicalSymbol(new Note("A", 0, 4, MusicalSymbolDuration.Sixteenth, NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.End }));
+
+            staffTest.AddMusicalSymbol(new Note("C", 0, 3, MusicalSymbolDuration.Whole, NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { IsChordElement = true });
+            staffTest.AddMusicalSymbol(new Note("C", 0, 2, MusicalSymbolDuration.Whole, NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { IsChordElement = true });
+            staffTest.AddMusicalSymbol(new Note("A", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { IsChordElement = true });
+            staffTest.AddMusicalSymbol(new Note("A", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { IsChordElement = false });
+
             staffTest.AddMusicalSymbol(new Barline());
 
             staffTest.AddMusicalSymbol(new Note("D", 0, 5, MusicalSymbolDuration.Whole, NoteStemDirection.Down, NoteTieType.Stop, new List<NoteBeamType>() { NoteBeamType.Single }));
