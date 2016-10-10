@@ -73,7 +73,7 @@ namespace DPA_Musicsheets
                                 //if(currentAbsoluteTicksNote != )
                                 currentDuration += noteDuration;
                                 //currentAbsoluteTicksNote
-                                if (currentDuration >= 1) // temp very dirty solution
+                                if (currentDuration >= (double) timeSignature.Measure / (double)timeSignature.NumberOfBeats) // temp very dirty solution
                                 {
                                     staff.Symbols.Add(new Barline());
                                     currentDuration = 0;

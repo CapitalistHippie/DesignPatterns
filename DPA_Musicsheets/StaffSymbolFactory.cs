@@ -129,7 +129,7 @@ namespace DPA_Musicsheets
         {
             // Get the note duration and length.
             double percentageOfBeatNote = (double)deltaTicks / ticksPerBeat;
-            double percentageOfWholeNote = percentageOfBeatNote * (1d / timeSignature.Measure);
+            double percentageOfWholeNote = percentageOfBeatNote * (1d / 4);
 
             double noteDuration = -1;
             double realDuration = -1;
