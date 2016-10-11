@@ -176,6 +176,19 @@ namespace DPA_Musicsheets
             }
         }
 
+        public StaffSymbol ConstructRest(MidiEvent midiEvent, int ticksPerBeat, TimeSignature timeSignature)
+        {
+            Rest rest = new Rest();
+            Note emptyNote = new Note();
+
+            double duration = GetDoubleNoteDuration(emptyNote, ticksPerBeat, midiEvent.DeltaTicks, timeSignature);
+
+            rest.Duration = emptyNote.Duration;
+            rest.NumberOfDots = emptyNote.NumberOfDots;
+
+            return rest;
+        }
+
         public StaffSymbol ConstructNote(int keyCode, MidiEvent midiEvent)
         {
             if (!keyNoteMap.ContainsKey(keyCode))
@@ -336,6 +349,11 @@ namespace DPA_Musicsheets
             {
                 staff.Symbols[i] = chord[j]; // swap correct sequence of the chord into the Symbols list
             }
+        }
+
+        internal StaffSymbol ConstructRest(MidiEvent midiEvent)
+        {
+            throw new NotImplementedException();
         }
     }
 }

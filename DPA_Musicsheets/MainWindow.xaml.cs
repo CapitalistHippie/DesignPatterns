@@ -180,12 +180,18 @@ namespace DPA_Musicsheets
                         }
 
                     }
-                    if (symbol is Model.Barline) // Visitor pattern
+                    else if (symbol is Model.Rest)
+                    {
+                        var currentRest = symbol as Model.Rest;
+
+                        incipitViewer.AddMusicalSymbol(new Rest(StaffSymbolFactory.Instance.GetMusicalSymbolDuration(currentRest.Duration)));
+                    }
+                    else if (symbol is Model.Barline) // Visitor pattern
                     {
                         incipitViewer.AddMusicalSymbol(new Barline());
                         index++;
                     }
-                    if (symbol is Model.TimeSignature) // Visitor pattern
+                    else if (symbol is Model.TimeSignature) // Visitor pattern
                     {
 
                         currentTimeSignature = symbol as Model.TimeSignature;

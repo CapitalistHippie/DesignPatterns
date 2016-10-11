@@ -31,8 +31,6 @@ namespace DPA_Musicsheets
 
         public Score BuildScoreFromMidi(String filePath)
         {
-            double currentDuration = 0;
-            int currentAbsoluteTicksNote = 0;
             Score score = new Score();
                
             // Read the MIDI sequence.
@@ -54,6 +52,12 @@ namespace DPA_Musicsheets
 
                 Track track = midiSequence[i];
 
+                double newBar = 0;
+                if (timeSignature != null)
+                {
+                    newBar += ticksPerBeat * 4 * ((double)timeSignature.Measure / (double)timeSignature.NumberOfBeats);
+                }
+
                 Dictionary<int, Note> keyNoteMap = new Dictionary<int, Note>();
 
                 foreach (var midiEvent in track.Iterator())
@@ -70,18 +74,26 @@ namespace DPA_Musicsheets
                             if (StaffSymbolFactory.Instance.ContainsNoteKey(keyCode) && (channelMessage.Data2 == 0 || channelMessage.Command == ChannelCommand.NoteOff))
                             {
                                 double noteDuration = StaffSymbolFactory.Instance.SetNoteDuration(keyCode, midiEvent, ticksPerBeat, timeSignature);
-                                //if(currentAbsoluteTicksNote != )
-                                currentDuration += noteDuration;
-                                //currentAbsoluteTicksNote
-                                if (currentDuration >= (double) timeSignature.Measure / (double)timeSignature.NumberOfBeats) // temp very dirty solution
+                                if (midiEvent.AbsoluteTicks >= newBar) // New Bar Line
                                 {
                                     staff.Symbols.Add(new Barline());
-                                    currentDuration = 0;
+                                    newBar += ticksPerBeat * 4 * ((double)timeSignature.Measure / (double)timeSignature.NumberOfBeats);
                                 }
                             }
                             // Create new Note
                             else if (channelMessage.Command == ChannelCommand.NoteOn && channelMessage.Data2 > 0)
                             {
+                                if (midiEvent.DeltaTicks > 0) // Found a rest -> construct rest symbol
+                                {
+                                    StaffSymbol rest = StaffSymbolFactory.Instance.ConstructRest(midiEvent, ticksPerBeat, timeSignature);
+                                    staff.Symbols.Add(rest); // TODO
+                                    if (midiEvent.AbsoluteTicks >= newBar) // New Bar Line
+                                    {
+                                        staff.Symbols.Add(new Barline());
+                                        newBar += ticksPerBeat * 4 * ((double)timeSignature.Measure / (double)timeSignature.NumberOfBeats);
+                                    }
+                                }
+
                                 StaffSymbol note = StaffSymbolFactory.Instance.ConstructNote(keyCode, midiEvent);
                                 if (note != null)
                                 {
