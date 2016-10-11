@@ -124,45 +124,48 @@ namespace DPA_Musicsheets
 
 
 
-                        Model.StaffSymbol nextSymbol = staff.Symbols[i+1];
-
-                        if (nextSymbol is Model.Note)
+                        if (staff.Symbols.Count > i + 1)
                         {
-                            var nextNote = nextSymbol as Model.Note;
+                            Model.StaffSymbol nextSymbol = staff.Symbols[i + 1];
 
-                            if (continueNoteBeam)
+                            if (nextSymbol is Model.Note)
                             {
-                                if (amountNoteBeams >= 3)
+                                var nextNote = nextSymbol as Model.Note;
+
+                                if (continueNoteBeam)
                                 {
-                                    noteBeamType = NoteBeamType.End;
-                                    amountNoteBeams = 1;
-                                    continueNoteBeam = false;
-                                }
-                                else if (nextNote.Duration == currentNote.Duration)
-                                {
-                                    noteBeamType = NoteBeamType.Continue;
-                                    amountNoteBeams++;
+                                    if (amountNoteBeams >= 3)
+                                    {
+                                        noteBeamType = NoteBeamType.End;
+                                        amountNoteBeams = 1;
+                                        continueNoteBeam = false;
+                                    }
+                                    else if (nextNote.Duration == currentNote.Duration)
+                                    {
+                                        noteBeamType = NoteBeamType.Continue;
+                                        amountNoteBeams++;
+                                    }
+                                    else
+                                    {
+                                        noteBeamType = NoteBeamType.End;
+                                        amountNoteBeams = 1;
+                                        continueNoteBeam = false;
+                                    }
                                 }
                                 else
                                 {
-                                    noteBeamType = NoteBeamType.End;
-                                    amountNoteBeams = 1;
-                                    continueNoteBeam = false;
+                                    if (nextNote.Duration == currentNote.Duration &&
+                                        StaffSymbolFactory.Instance.GetIntDuration(currentNote.Duration) > 4) // everything with a shorter duration than quarter notes uses beams, quarter and higher don't
+                                    {
+                                        noteBeamType = NoteBeamType.Start;
+                                        continueNoteBeam = true;
+                                    }
                                 }
-                            }
-                            else
-                            {
-                                if (nextNote.Duration == currentNote.Duration && 
-                                    StaffSymbolFactory.Instance.GetIntDuration(currentNote.Duration) > 4) // everything with a shorter duration than quarter notes uses beams, quarter and higher don't
-                                {
-                                    noteBeamType = NoteBeamType.Start;
-                                    continueNoteBeam = true;
-                                }
-                            }
 
-                            if (nextNote.StartTime == currentNote.StartTime)
-                            {
-                                chord = true;
+                                if (nextNote.StartTime == currentNote.StartTime)
+                                {
+                                    chord = true;
+                                }
                             }
                         }
                         else if (continueNoteBeam)
@@ -261,21 +264,23 @@ namespace DPA_Musicsheets
 
                 string extension = System.IO.Path.GetExtension(openFileDialog.FileName);
 
+                Model.Score score = null;
+
                 switch (extension)
                 {
                     case ".mid":
-                        // Show the MIDI tracks content.
+                        // Show the MIDI tracks content for debugging.
                         ShowMidiTracks(MidiReader.ReadMidi(FilePathTextBox.Text));
-
                         // Load score and display for our viewing pleasure.
-                        Model.Score score = ScoreBuilder.Instance.BuildScoreFromMidi(FilePathTextBox.Text);
-                        FillPSAMViewer(score);
+                        score = ScoreBuilder.Instance.BuildScoreFromMidi(FilePathTextBox.Text);
                         break;
                     case ".ly":
                         // Build a score from the LilyPond.
-                        ScoreBuilder.Instance.BuildScoreFromLilyPond(FilePathTextBox.Text);
+                        score = ScoreBuilder.Instance.BuildScoreFromLilyPond(FilePathTextBox.Text);
                         break;
                 }
+
+                FillPSAMViewer(score);
             }
         }
 

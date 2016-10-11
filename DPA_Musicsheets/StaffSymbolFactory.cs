@@ -16,7 +16,8 @@ namespace DPA_Musicsheets
         private Dictionary<StaffSymbolDuration, PSAMControlLibrary.MusicalSymbolDuration> psamConvertDictionary;
         private Dictionary<int, String> keycodeDictionary;
         private Dictionary<int, Note> keyNoteMap;
-        
+        public Dictionary<string, string> lilyPondNoteDictionary;
+
 
         public static StaffSymbolFactory Instance
         {
@@ -69,6 +70,22 @@ namespace DPA_Musicsheets
                 {9, "A"},
                 {10, "A#"},
                 {11, "B"},
+            };
+
+            lilyPondNoteDictionary = new Dictionary<string, string>
+            {
+                {"c", "C"},
+                {"cis", "C#"},
+                {"d", "D"},
+                {"dis", "D#"},
+                {"e", "E"},
+                {"f", "F"},
+                {"fis", "F#"},
+                {"g", "G"},
+                {"gis", "G#"},
+                {"a", "A"},
+                {"as", "A#"},
+                {"b", "B"},
             };
 
             keyNoteMap = new Dictionary<int, Note>();
