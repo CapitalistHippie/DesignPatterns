@@ -162,7 +162,7 @@ namespace DPA_Musicsheets
                                     }
                                 }
 
-                                if (nextNote.StartTime == currentNote.StartTime)
+                                if (nextNote.StartTime != 0 &&  nextNote.StartTime == currentNote.StartTime)
                                 {
                                     chord = true;
                                 }
@@ -272,7 +272,7 @@ namespace DPA_Musicsheets
                         // Show the MIDI tracks content for debugging.
                         ShowMidiTracks(MidiReader.ReadMidi(FilePathTextBox.Text));
                         // Load score and display for our viewing pleasure.
-                        score = ScoreBuilder.Instance.BuildScoreFromMidi(FilePathTextBox.Text);
+                        //score = ScoreBuilder.Instance.BuildScoreFromMidi(FilePathTextBox.Text);
                         break;
                     case ".ly":
                         // Build a score from the LilyPond.
@@ -280,7 +280,7 @@ namespace DPA_Musicsheets
                         break;
                 }
 
-                FillPSAMViewer(score);
+                //FillPSAMViewer(score);
             }
         }
 

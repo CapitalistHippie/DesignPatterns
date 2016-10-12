@@ -77,6 +77,7 @@
     <Compile Include="MessageTypeHandlers\MetaTimeSignatureHandler.cs" />
     <Compile Include="MessageTypeHandlers\MetaTrackNameHandler.cs" />
     <Compile Include="Model\Barline.cs" />
+    <Compile Include="Model\IStaffObserver.cs" />
     <Compile Include="Model\LilyPondStaffAdapter.cs" />
     <Compile Include="MidiTrack.cs" />
     <Compile Include="Model\Clef.cs" />

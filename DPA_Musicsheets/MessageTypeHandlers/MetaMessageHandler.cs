@@ -21,7 +21,7 @@ namespace DPA_Musicsheets.MessageTypeHandlers
             };
         }
 
-        public void Execute(Sanford.Multimedia.Midi.MidiEvent midiEvent, Model.Staff staff, double newBar, int ticksPerBeat, Model.TimeSignature timeSignature, int index)
+        public void Execute(Sanford.Multimedia.Midi.MidiEvent midiEvent, Model.Staff staff, double newBar, int ticksPerBeat, int index)
         {
             var metaMessage = midiEvent.MidiMessage as MetaMessage;
             

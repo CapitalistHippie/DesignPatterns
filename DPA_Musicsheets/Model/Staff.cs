@@ -8,18 +8,33 @@ namespace DPA_Musicsheets.Model
 {
     public class Staff
     {
+        private List<IStaffObserver> observers = new List<IStaffObserver>();
+
         public int StaffNumber { get; set; }
 
         public string StaffName { get; set; }
 
         public string InstrumentName { get; set; }
 
-        public List<StaffSymbol> Symbols { get; private set; }
+        public List<StaffSymbol> Symbols { get; set; }
 
-        public void AddSymbol(StaffSymbol staffSymbol) {
-            
-            
+        public void AddObserver(IStaffObserver observer)
+        {
+            // Check whether observer is already registered. If not, add it
+            if (!observers.Contains(observer))
+                observers.Add(observer);
+        }
+
+        public void AddSymbol<T>(T staffSymbol) where T: StaffSymbol
+        {
             Symbols.Add(staffSymbol);
+            foreach (var observer in observers)
+                observer.OnSymbolAdded(staffSymbol);
+        }
+
+        public StaffSymbol GetSymbol(int i)
+        {
+            return Symbols[i];
         }
 
         public Tempo GetMostRecentTempo()

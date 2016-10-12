@@ -8,9 +8,11 @@ using System.Threading.Tasks;
 
 namespace DPA_Musicsheets.MessageTypeHandlers
 {
-    public class ChannelMessageHandler : IMessageTypeHandler
+    public class ChannelMessageHandler : IMessageTypeHandler, IStaffObserver
     {
-        public void Execute(MidiEvent midiEvent, Staff staff, double newBar, int ticksPerBeat, TimeSignature timeSignature, int index)
+        TimeSignature timeSignature;
+
+        public void Execute(MidiEvent midiEvent, Staff staff, double newBar, int ticksPerBeat, int index)
         {
             var channelMessage = midiEvent.MidiMessage as ChannelMessage;
 
@@ -22,7 +24,7 @@ namespace DPA_Musicsheets.MessageTypeHandlers
                 double noteDuration = StaffSymbolFactory.Instance.SetNoteDuration(keyCode, midiEvent, ticksPerBeat, timeSignature);
                 if (midiEvent.AbsoluteTicks >= newBar) // New Bar Line
                 {
-                    staff.Symbols.Add(new Barline());
+                    staff.AddSymbol(new Barline());
                     newBar += ticksPerBeat * 4 * ((double)timeSignature.Measure / (double)timeSignature.NumberOfBeats);
                 }
             }
@@ -32,10 +34,10 @@ namespace DPA_Musicsheets.MessageTypeHandlers
                 if (midiEvent.DeltaTicks > 0) // Found a rest -> construct rest symbol
                 {
                     StaffSymbol rest = StaffSymbolFactory.Instance.ConstructRest(midiEvent, ticksPerBeat, timeSignature);
-                    staff.Symbols.Add(rest); // TODO
+                    staff.AddSymbol(rest); // TODO
                     if (midiEvent.AbsoluteTicks >= newBar) // New Bar Line
                     {
-                        staff.Symbols.Add(new Barline());
+                        staff.AddSymbol(new Barline());
                         newBar += ticksPerBeat * 4 * ((double)timeSignature.Measure / (double)timeSignature.NumberOfBeats);
                     }
                 }
@@ -43,13 +45,22 @@ namespace DPA_Musicsheets.MessageTypeHandlers
                 StaffSymbol note = StaffSymbolFactory.Instance.ConstructNote(keyCode, midiEvent);
                 if (note != null)
                 {
-                    staff.Symbols.Add(note);
+                    staff.AddSymbol(note);
                 }
                 else
                 {
                     Console.WriteLine("Error: Null note");
                 }
             }
+        }
+
+        public void OnSymbolAdded<T>(T symbol) where T : StaffSymbol
+        {
+        }
+
+        public void OnSymbolAdded(TimeSignature symbol)
+        {
+            timeSignature = symbol;
         }
     }
 }

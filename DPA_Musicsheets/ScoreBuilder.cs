@@ -14,7 +14,6 @@ namespace DPA_Musicsheets
     public class ScoreBuilder
     {
         private static ScoreBuilder instance;
-        private Dictionary<MessageType, IMessageTypeHandler> messageTypeDictionary;
         
         public static ScoreBuilder Instance
         {
@@ -28,17 +27,18 @@ namespace DPA_Musicsheets
 
         private ScoreBuilder()
         {
-            messageTypeDictionary = new Dictionary<MessageType, IMessageTypeHandler>
-            {
-                { MessageType.Channel   , new ChannelMessageHandler()   },
-                { MessageType.Meta      , new MetaMessageHandler()      },
-            };
         }
 
         public Score BuildScoreFromMidi(String filePath)
         {
             Score score = new Score();
-               
+
+            Dictionary<MessageType, IMessageTypeHandler> messageTypeDictionary = new Dictionary<MessageType, IMessageTypeHandler>
+            {
+                { MessageType.Channel   , new ChannelMessageHandler()   },
+                { MessageType.Meta      , new MetaMessageHandler()      },
+            };
+
             // Read the MIDI sequence.
             var midiSequence = new Sequence();
             midiSequence.Load(filePath);
@@ -68,51 +68,11 @@ namespace DPA_Musicsheets
 
                 foreach (var midiEvent in track.Iterator())
                 {
-                    if (messageTypeDictionary.ContainsKey(midiEvent.MidiMessage.MessageType)) {
-                        messageTypeDictionary[midiEvent.MidiMessage.MessageType].Execute(midiEvent, staff, newBar, ticksPerBeat, timeSignature, i);
+                    if (messageTypeDictionary.ContainsKey(midiEvent.MidiMessage.MessageType))
+                    {
+                        messageTypeDictionary[midiEvent.MidiMessage.MessageType].
+                            Execute(midiEvent, staff, newBar, ticksPerBeat, i);
                     }
-                    
-                    //switch (midiEvent.MidiMessage.MessageType)
-                    //{
-                        
-                    //    case MessageType.Meta:
-                    //        var metaMessage = midiEvent.MidiMessage as MetaMessage;
-                    //        switch (metaMessage.MetaType)
-                    //        {
-                    //            case MetaType.TrackName:
-                    //                staff.StaffName = i + " " + Encoding.Default.GetString(metaMessage.GetBytes());
-                    //                break;
-                    //            case MetaType.InstrumentName:
-                    //                staff.InstrumentName = Encoding.Default.GetString(metaMessage.GetBytes());
-                    //                break;
-                    //            case MetaType.Tempo:
-                    //                tempo = (Tempo)StaffSymbolFactory.Instance.ConstructSymbol(metaMessage);
-                    //                staff.Symbols.Add(tempo);
-                    //                break;
-                    //            case MetaType.TimeSignature:
-                    //                if (i == 0) // Control Track
-                    //                {
-                    //                    if (firstTimeSignature)
-                    //                    {
-                    //                        timeSignature = (TimeSignature)StaffSymbolFactory.Instance.ConstructSymbol(metaMessage);
-                    //                        staff.Symbols.Add(timeSignature);
-                    //                        firstTimeSignature = false;
-                    //                    }
-                    //                    // else skip these frigging false timeSignatures disrupting time and space
-                    //                }
-                    //                else
-                    //                {
-                    //                    timeSignature = (TimeSignature)StaffSymbolFactory.Instance.ConstructSymbol(metaMessage);
-                    //                    staff.Symbols.Add(timeSignature);
-                    //                    firstTimeSignature = false;
-                    //                }
-                    //                break;
-                    //            default:
-                    //                staff.Symbols.Add(StaffSymbolFactory.Instance.ConstructSymbol(metaMessage));
-                    //                break;
-                    //        }
-                    //        break;
-                    //}
                 }
                 if (staff.StaffName == null)
                 {
@@ -134,7 +94,7 @@ namespace DPA_Musicsheets
 
             // Default relative note is c.
             string  relativeNote = "c";
-            int     defaultOctave = 6;
+            int     defaultOctave = 5;
 
             for (int i = 0; i < tokens.Length; i++)
             {

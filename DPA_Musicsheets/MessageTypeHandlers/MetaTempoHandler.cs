@@ -11,7 +11,7 @@ namespace DPA_Musicsheets.MessageTypeHandlers
     {
         public void Execute(Staff staff, MetaMessage metaMessage, int index)
         {
-            staff.Symbols.Add(StaffSymbolFactory.Instance.ConstructSymbol(metaMessage));
+            staff.AddSymbol(StaffSymbolFactory.Instance.ConstructSymbol(metaMessage));
         }
     }
 }

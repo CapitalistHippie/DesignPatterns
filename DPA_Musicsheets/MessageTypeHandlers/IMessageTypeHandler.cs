@@ -10,6 +10,6 @@ namespace DPA_Musicsheets.MessageTypeHandlers
 {
     public interface IMessageTypeHandler
     {
-        void Execute(MidiEvent midiEvent, Staff staff, double newBar, int ticksPerBeat, TimeSignature timeSignature, int index);
+        void Execute(MidiEvent midiEvent, Staff staff, double newBar, int ticksPerBeat, int index);
     }
 }

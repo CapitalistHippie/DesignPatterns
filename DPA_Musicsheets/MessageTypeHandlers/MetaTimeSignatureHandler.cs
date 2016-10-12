@@ -11,24 +11,24 @@ namespace DPA_Musicsheets.MessageTypeHandlers
     {
         public void Execute(Staff staff, MetaMessage metaMessage, int index)
         {
-            //if (i == 0) // Control Track
-                //                {
-                //                    if (firstTimeSignature)
-                //                    {
-                //                        timeSignature = (TimeSignature)StaffSymbolFactory.Instance.ConstructSymbol(metaMessage);
-                //                        staff.Symbols.Add(timeSignature);
-                //                        firstTimeSignature = false;
-                //                    }
-                //                    // else skip these frigging false timeSignatures disrupting time and space
-                //                }
-                //                else
-                //                {
-                //                    timeSignature = (TimeSignature)StaffSymbolFactory.Instance.ConstructSymbol(metaMessage);
-                //                    staff.Symbols.Add(timeSignature);
-                //                    firstTimeSignature = false;
-                //                }
+            //if (index == 0) // Control Track
+            //{
+            //    if (firstTimeSignature)
+            //    {
+            //        timeSignature = (TimeSignature)StaffSymbolFactory.Instance.ConstructSymbol(metaMessage);
+            //        staff.Symbols.Add(timeSignature);
+            //        firstTimeSignature = false;
+            //    }
+            //    else skip these frigging false timeSignatures disrupting time and space
+            //}
+            //else
+            //{
+            //    timeSignature = (TimeSignature)StaffSymbolFactory.Instance.ConstructSymbol(metaMessage);
+            //    staff.Symbols.Add(timeSignature);
+            //    firstTimeSignature = false;
+            //}
 
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
     }
 }
