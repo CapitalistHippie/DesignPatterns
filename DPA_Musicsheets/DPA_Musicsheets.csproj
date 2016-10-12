@@ -68,6 +68,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="MessageTypeHandlers\ChannelMessageHandler.cs" />
+    <Compile Include="MessageTypeHandlers\IMessageTypeHandler.cs" />
+    <Compile Include="MessageTypeHandlers\IMetaTypeHandler.cs" />
+    <Compile Include="MessageTypeHandlers\MetaInstrumentNameHandler.cs" />
+    <Compile Include="MessageTypeHandlers\MetaMessageHandler.cs" />
+    <Compile Include="MessageTypeHandlers\MetaTempoHandler.cs" />
+    <Compile Include="MessageTypeHandlers\MetaTimeSignatureHandler.cs" />
+    <Compile Include="MessageTypeHandlers\MetaTrackNameHandler.cs" />
     <Compile Include="Model\Barline.cs" />
     <Compile Include="Model\LilyPondStaffAdapter.cs" />
     <Compile Include="MidiTrack.cs" />

@@ -1,4 +1,5 @@
-﻿using DPA_Musicsheets.Model;
+﻿using DPA_Musicsheets.MessageTypeHandlers;
+using DPA_Musicsheets.Model;
 using Sanford.Multimedia.Midi;
 using System;
 using System.Collections.Generic;
@@ -13,8 +14,8 @@ namespace DPA_Musicsheets
     public class ScoreBuilder
     {
         private static ScoreBuilder instance;
+        private Dictionary<MessageType, IMessageTypeHandler> messageTypeDictionary;
         
-
         public static ScoreBuilder Instance
         {
             get
@@ -27,7 +28,11 @@ namespace DPA_Musicsheets
 
         private ScoreBuilder()
         {
-            
+            messageTypeDictionary = new Dictionary<MessageType, IMessageTypeHandler>
+            {
+                { MessageType.Channel   , new ChannelMessageHandler()   },
+                { MessageType.Meta      , new MetaMessageHandler()      },
+            };
         }
 
         public Score BuildScoreFromMidi(String filePath)
@@ -63,94 +68,51 @@ namespace DPA_Musicsheets
 
                 foreach (var midiEvent in track.Iterator())
                 {
-                    switch (midiEvent.MidiMessage.MessageType)
-                    {
-                        // ChannelMessages zijn de inhoudelijke messages.
-                        case MessageType.Channel:
-                            var channelMessage = midiEvent.MidiMessage as ChannelMessage;
-
-                            int keyCode = channelMessage.Data1;
-
-                            // Note already exists, setNoteDuration
-                            if (StaffSymbolFactory.Instance.ContainsNoteKey(keyCode) && (channelMessage.Data2 == 0 || channelMessage.Command == ChannelCommand.NoteOff))
-                            {
-                                double noteDuration = StaffSymbolFactory.Instance.SetNoteDuration(keyCode, midiEvent, ticksPerBeat, timeSignature);
-                                if (midiEvent.AbsoluteTicks >= newBar) // New Bar Line
-                                {
-                                    staff.Symbols.Add(new Barline());
-                                    newBar += ticksPerBeat * 4 * ((double)timeSignature.Measure / (double)timeSignature.NumberOfBeats);
-                                }
-                            }
-                            // Create new Note
-                            else if (channelMessage.Command == ChannelCommand.NoteOn && channelMessage.Data2 > 0)
-                            {
-                                if (midiEvent.DeltaTicks > 0) // Found a rest -> construct rest symbol
-                                {
-                                    StaffSymbol rest = StaffSymbolFactory.Instance.ConstructRest(midiEvent, ticksPerBeat, timeSignature);
-                                    staff.Symbols.Add(rest); // TODO
-                                    if (midiEvent.AbsoluteTicks >= newBar) // New Bar Line
-                                    {
-                                        staff.Symbols.Add(new Barline());
-                                        newBar += ticksPerBeat * 4 * ((double)timeSignature.Measure / (double)timeSignature.NumberOfBeats);
-                                    }
-                                }
-
-                                StaffSymbol note = StaffSymbolFactory.Instance.ConstructNote(keyCode, midiEvent);
-                                if (note != null)
-                                {
-                                    staff.Symbols.Add(note);
-                                }
-                                else
-                                {
-                                    Console.WriteLine("Error.");
-                                }
-                            }
-
-                            break;
-                        case MessageType.SystemExclusive:
-                            break;
-                        case MessageType.SystemCommon:
-                            break;
-                        case MessageType.SystemRealtime:
-                            break;
-                        case MessageType.Meta:
-                            var metaMessage = midiEvent.MidiMessage as MetaMessage;
-                            switch (metaMessage.MetaType)
-                            {
-                                case MetaType.TrackName:
-                                    staff.StaffName = i + " " + Encoding.Default.GetString(metaMessage.GetBytes());
-                                    break;
-                                case MetaType.InstrumentName:
-                                    staff.InstrumentName = Encoding.Default.GetString(metaMessage.GetBytes());
-                                    break;
-                                case MetaType.Tempo:
-                                    tempo = (Tempo)StaffSymbolFactory.Instance.ConstructSymbol(metaMessage);
-                                    staff.Symbols.Add(tempo);
-                                    break;
-                                case MetaType.TimeSignature:
-                                    if (i == 0) // Control Track
-                                    {
-                                        if (firstTimeSignature)
-                                        {
-                                            timeSignature = (TimeSignature)StaffSymbolFactory.Instance.ConstructSymbol(metaMessage);
-                                            staff.Symbols.Add(timeSignature);
-                                            firstTimeSignature = false;
-                                        }
-                                        // else skip these frigging false timeSignatures disrupting time and space
-                                    }
-                                    else
-                                    {
-                                        timeSignature = (TimeSignature)StaffSymbolFactory.Instance.ConstructSymbol(metaMessage);
-                                        staff.Symbols.Add(timeSignature);
-                                        firstTimeSignature = false;
-                                    }
-                                    break;
-                                default:
-                                    staff.Symbols.Add(StaffSymbolFactory.Instance.ConstructSymbol(metaMessage));
-                                    break;
-                            }
-                            break;
+                    if (messageTypeDictionary.ContainsKey(midiEvent.MidiMessage.MessageType)) {
+                        messageTypeDictionary[midiEvent.MidiMessage.MessageType].Execute(midiEvent, staff, newBar, ticksPerBeat, timeSignature, i);
                     }
+                    
+                    //switch (midiEvent.MidiMessage.MessageType)
+                    //{
+                        
+                    //    case MessageType.Meta:
+                    //        var metaMessage = midiEvent.MidiMessage as MetaMessage;
+                    //        switch (metaMessage.MetaType)
+                    //        {
+                    //            case MetaType.TrackName:
+                    //                staff.StaffName = i + " " + Encoding.Default.GetString(metaMessage.GetBytes());
+                    //                break;
+                    //            case MetaType.InstrumentName:
+                    //                staff.InstrumentName = Encoding.Default.GetString(metaMessage.GetBytes());
+                    //                break;
+                    //            case MetaType.Tempo:
+                    //                tempo = (Tempo)StaffSymbolFactory.Instance.ConstructSymbol(metaMessage);
+                    //                staff.Symbols.Add(tempo);
+                    //                break;
+                    //            case MetaType.TimeSignature:
+                    //                if (i == 0) // Control Track
+                    //                {
+                    //                    if (firstTimeSignature)
+                    //                    {
+                    //                        timeSignature = (TimeSignature)StaffSymbolFactory.Instance.ConstructSymbol(metaMessage);
+                    //                        staff.Symbols.Add(timeSignature);
+                    //                        firstTimeSignature = false;
+                    //                    }
+                    //                    // else skip these frigging false timeSignatures disrupting time and space
+                    //                }
+                    //                else
+                    //                {
+                    //                    timeSignature = (TimeSignature)StaffSymbolFactory.Instance.ConstructSymbol(metaMessage);
+                    //                    staff.Symbols.Add(timeSignature);
+                    //                    firstTimeSignature = false;
+                    //                }
+                    //                break;
+                    //            default:
+                    //                staff.Symbols.Add(StaffSymbolFactory.Instance.ConstructSymbol(metaMessage));
+                    //                break;
+                    //        }
+                    //        break;
+                    //}
                 }
                 if (staff.StaffName == null)
                 {

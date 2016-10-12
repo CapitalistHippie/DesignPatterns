@@ -14,7 +14,23 @@ namespace DPA_Musicsheets.Model
 
         public string InstrumentName { get; set; }
 
-        public List<StaffSymbol> Symbols { get; set; }
+        public List<StaffSymbol> Symbols { get; private set; }
+
+        public void AddSymbol(StaffSymbol staffSymbol) {
+            
+            
+            Symbols.Add(staffSymbol);
+        }
+
+        public Tempo GetMostRecentTempo()
+        {
+            throw new NotImplementedException();
+        }
+
+        public TimeSignature GetMostRecentTimeSignature()
+        {
+            throw new NotImplementedException();
+        }
 
         public Staff()
         {

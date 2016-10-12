@@ -96,7 +96,7 @@ namespace DPA_Musicsheets
                         scoreStackPanel.Children.Add(incipitViewer);
                         if (currentTimeSignature != null)
                         {
-                            incipitViewer.AddMusicalSymbol(new Clef(ClefType.GClef, 2));
+                            incipitViewer.AddMusicalSymbol(new Clef(ClefType.GClef, 2)); //hardcoded -> fix
                             incipitViewer.AddMusicalSymbol(new TimeSignature(TimeSignatureType.Numbers, (uint)currentTimeSignature.Measure, (uint)currentTimeSignature.NumberOfBeats));
                         }
 
@@ -105,7 +105,7 @@ namespace DPA_Musicsheets
                     {
                         var currentNote = symbol as Model.Note; // Visitor pattern instead
 
-                        NoteTieType noteTieType = NoteTieType.None; // TODO later
+                        //NoteTieType noteTieType = NoteTieType.None; // TODO later
                         NoteBeamType noteBeamType = NoteBeamType.Single; // default
                         
                         bool chord = false; // IsChord
@@ -167,12 +167,12 @@ namespace DPA_Musicsheets
                                     chord = true;
                                 }
                             }
-                        }
-                        else if (continueNoteBeam)
-                        {
-                            noteBeamType = NoteBeamType.End;
-                            amountNoteBeams = 1;
-                            continueNoteBeam = false;
+                            else if (continueNoteBeam)
+                            {
+                                noteBeamType = NoteBeamType.End;
+                                amountNoteBeams = 1;
+                                continueNoteBeam = false;
+                            }
                         }
 
                         //staff.
