@@ -8,6 +8,9 @@ namespace DPA_Musicsheets.Model
 {
     public class Barline : StaffSymbol
     {
-
+        public override void Accept(SheetMusicVisitor smVisitor, int index)
+        {
+            smVisitor.Visit(this);
+        }
     }
 }

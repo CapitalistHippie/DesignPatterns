@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace DPA_Musicsheets.Model
 {
-    public class StaffSymbol
+    public abstract class StaffSymbol
     {
+        public abstract void Accept(SheetMusicVisitor smVisitor, int index);
     }
 }

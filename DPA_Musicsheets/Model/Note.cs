@@ -16,6 +16,11 @@ namespace DPA_Musicsheets.Model
         public int NumberOfDots { get; set; }
         public int StartTime { get; set; }
 
+        public override void Accept(SheetMusicVisitor smVisitor, int index)
+        {
+            smVisitor.Visit(this, index);
+        }
+
         public Note()
         {
             NumberOfDots = 0; //default value derp
