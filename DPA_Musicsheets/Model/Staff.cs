@@ -18,11 +18,20 @@ namespace DPA_Musicsheets.Model
 
         public List<StaffSymbol> Symbols { get; set; }
 
+        public Staff()
+        {
+            Symbols = new List<StaffSymbol>();
+        }
+
         public void AddObserver(IStaffObserver observer)
         {
-            // Check whether observer is already registered. If not, add it
             if (!observers.Contains(observer))
                 observers.Add(observer);
+        }
+
+        public void RemoveObserver(IStaffObserver observer)
+        {
+            observers.Remove(observer);
         }
 
         public void AddSymbol<T>(T staffSymbol) where T: StaffSymbol
@@ -35,21 +44,6 @@ namespace DPA_Musicsheets.Model
         public StaffSymbol GetSymbol(int i)
         {
             return Symbols[i];
-        }
-
-        public Tempo GetMostRecentTempo()
-        {
-            throw new NotImplementedException();
-        }
-
-        public TimeSignature GetMostRecentTimeSignature()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Staff()
-        {
-            Symbols = new List<StaffSymbol>();
         }
     }
 }

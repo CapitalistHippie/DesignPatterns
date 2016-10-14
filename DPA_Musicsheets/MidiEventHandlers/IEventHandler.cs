@@ -6,10 +6,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DPA_Musicsheets.MessageTypeHandlers
+namespace DPA_Musicsheets.MidiEventHandlers
 {
-    public interface IMessageTypeHandler
+    public interface IEventHandler
     {
-        void Execute(MidiEvent midiEvent, Staff staff, double newBar, int ticksPerBeat, int index);
+        void Handle(MidiEvent midiEvent, int trackIndex);
     }
 }

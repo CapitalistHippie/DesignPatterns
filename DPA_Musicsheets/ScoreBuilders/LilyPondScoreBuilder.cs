@@ -1,4 +1,4 @@
-﻿using DPA_Musicsheets.MessageTypeHandlers;
+﻿using DPA_Musicsheets.MidiEventHandlers;
 using DPA_Musicsheets.Model;
 using Sanford.Multimedia.Midi;
 using System;
@@ -9,82 +9,11 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace DPA_Musicsheets
+namespace DPA_Musicsheets.ScoreBuilders
 {
-    public class ScoreBuilder
+    public class LilyPondScoreBuilder : IScoreBuilder
     {
-        private static ScoreBuilder instance;
-        
-        public static ScoreBuilder Instance
-        {
-            get
-            {
-                if (instance == null)
-                    instance = new ScoreBuilder();
-                return instance;
-            }
-        }
-
-        private ScoreBuilder()
-        {
-        }
-
-        public Score BuildScoreFromMidi(String filePath)
-        {
-            Score score = new Score();
-
-            Dictionary<MessageType, IMessageTypeHandler> messageTypeDictionary = new Dictionary<MessageType, IMessageTypeHandler>
-            {
-                { MessageType.Channel   , new ChannelMessageHandler()   },
-                { MessageType.Meta      , new MetaMessageHandler()      },
-            };
-
-            // Read the MIDI sequence.
-            var midiSequence = new Sequence();
-            midiSequence.Load(filePath);
-
-            int ticksPerBeat = midiSequence.Division;
-
-            Tempo tempo = null;
-            TimeSignature timeSignature = null;
-
-            bool firstTimeSignature = true;
-
-            //Create a new staff for each track in the sequence.
-            for (int i = 0; i < midiSequence.Count; i++)
-            {
-                Staff staff = new Staff();
-                staff.StaffNumber = i;
-
-                Track track = midiSequence[i];
-
-                double newBar = 0;
-                if (timeSignature != null)
-                {
-                    newBar += ticksPerBeat * 4 * ((double)timeSignature.Measure / (double)timeSignature.NumberOfBeats);
-                }
-
-                Dictionary<int, Note> keyNoteMap = new Dictionary<int, Note>();
-
-                foreach (var midiEvent in track.Iterator())
-                {
-                    if (messageTypeDictionary.ContainsKey(midiEvent.MidiMessage.MessageType))
-                    {
-                        messageTypeDictionary[midiEvent.MidiMessage.MessageType].
-                            Execute(midiEvent, staff, newBar, ticksPerBeat, i);
-                    }
-                }
-                if (staff.StaffName == null)
-                {
-                    staff.StaffName = i.ToString();
-                }
-                score.Staves.Add(staff);
-            }
-
-            return score;
-        }
-
-        public Score BuildScoreFromLilyPond(String filePath)
+        public Score BuildScore(string filePath)
         {
             Score score = new Score();
             LilyPondStaffAdapter staff = new LilyPondStaffAdapter();
@@ -184,7 +113,7 @@ namespace DPA_Musicsheets
                 }
             }
 
-            score.Staves.Add(staff);
+            score.AddStaff(staff);
             return score;
         }
     }

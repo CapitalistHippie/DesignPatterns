@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using DPA_Musicsheets.ScoreBuilders;
+using Microsoft.Win32;
 using PSAMControlLibrary;
 using Sanford.Multimedia.Midi;
 using System;
@@ -32,7 +33,9 @@ namespace DPA_Musicsheets
         // DeviceID 0 is je audio van je PC zelf.
         private OutputDevice                    outputDevice = new OutputDevice(0);
         private MidiPlayer                      player;
-        public ObservableCollection<MidiTrack>  MidiTracks { get; private set; }
+        public  ObservableCollection<MidiTrack> MidiTracks { get; private set; }
+
+        private IScoreBuilder                   scoreBuilder = new ScoreBuilder();
 
         public MainWindow()
         {
@@ -49,7 +52,10 @@ namespace DPA_Musicsheets
 
             Model.TimeSignature currentTimeSignature = null;
 
-            foreach(Model.Staff staff in score.Staves) {
+            for (int i = 0; i < score.GetAmountOfStaves(); i++)
+            {
+                Model.Staff staff = score.GetStaff(i);
+
                 ScrollViewer scrollViewer = new ScrollViewer();
                 StackPanel scoreStackPanel = new StackPanel(); // TODO fix width
                 
@@ -83,10 +89,10 @@ namespace DPA_Musicsheets
                 int amountNoteBeams = 1;
 
                 NoteStemDirection noteStemDirection = NoteStemDirection.Up; // default
-
-                for (int i = 0; i < staff.Symbols.Count; i++)
+                
+                for (int ii = 0; ii < staff.Symbols.Count; ii++)
                 {
-                    Model.StaffSymbol symbol = staff.Symbols[i];
+                    Model.StaffSymbol symbol = staff.Symbols[ii];
                     if (index >= 6)
                     {
                         index = 1;
@@ -261,26 +267,18 @@ namespace DPA_Musicsheets
             {
                 // Show the file path in the text box.
                 FilePathTextBox.Text = openFileDialog.FileName;
+                Model.Score score = scoreBuilder.BuildScore(FilePathTextBox.Text);
 
-                string extension = System.IO.Path.GetExtension(openFileDialog.FileName);
-
-                Model.Score score = null;
-
-                switch (extension)
+                if (score == null)
                 {
-                    case ".mid":
-                        // Show the MIDI tracks content for debugging.
-                        ShowMidiTracks(MidiReader.ReadMidi(FilePathTextBox.Text));
-                        // Load score and display for our viewing pleasure.
-                        //score = ScoreBuilder.Instance.BuildScoreFromMidi(FilePathTextBox.Text);
-                        break;
-                    case ".ly":
-                        // Build a score from the LilyPond.
-                        score = ScoreBuilder.Instance.BuildScoreFromLilyPond(FilePathTextBox.Text);
-                        break;
+                    MessageBox.Show("Unsupported file type.");
+                    return;
                 }
 
-                //FillPSAMViewer(score);
+                FillPSAMViewer(score);
+
+                if (System.IO.Path.GetExtension(openFileDialog.FileName) == ".mid")
+                    ShowMidiTracks(MidiReader.ReadMidi(FilePathTextBox.Text));                
             }
         }
 
