@@ -15,7 +15,6 @@ namespace DPA_Musicsheets
         private Dictionary<StaffSymbolDuration, int> intDurationDictionary; //staffSymbolDurationDictionary reversed
         private Dictionary<StaffSymbolDuration, PSAMControlLibrary.MusicalSymbolDuration> psamConvertDictionary;
         private Dictionary<int, String> keycodeDictionary;
-        private Dictionary<int, Note> keyNoteMap;
         public Dictionary<string, string> lilyPondNoteDictionary;
 
 
@@ -86,161 +85,7 @@ namespace DPA_Musicsheets
                 {"a", "A"},
                 {"as", "A#"},
                 {"b", "B"},
-            };
-
-            keyNoteMap = new Dictionary<int, Note>();
-        }
-
-        public StaffSymbol ConstructSymbol(MetaMessage metaMessage)
-        {
-            byte[] bytes = metaMessage.GetBytes();
-
-            switch (metaMessage.MetaType)
-            {
-                case MetaType.TimeSignature:
-                    TimeSignature timeSignature = new TimeSignature();
-                    timeSignature.Measure = bytes[0];
-                    timeSignature.NumberOfBeats = (int)Math.Pow(2, bytes[1]); // fix
-
-                    return timeSignature;
-                case MetaType.Tempo:
-                    Tempo tempo = new Tempo();
-
-                    // Calculate the tempo in microseconds per beat.
-                    int msPerBeatTempo = (bytes[0] & 0xff) << 16 | (bytes[1] & 0xff) << 8 | (bytes[2] & 0xff);
-
-                    // Lets bring that down to beats per minute shall we?
-                    tempo.BeatsPerMinute = 60000000 / msPerBeatTempo;
-
-                    return tempo;
-                default:
-                    return null;
-            }
-        }
-
-        public bool ContainsNoteKey(int keyCode)
-        {
-            return keyNoteMap.ContainsKey(keyCode);
-        }
-
-        public double SetNoteDuration(int keyCode, MidiEvent midiEvent, int ticksPerBeat, TimeSignature timeSignature)
-        {
-            Note note = keyNoteMap[keyCode];
-            int deltaTicks = midiEvent.AbsoluteTicks - note.StartTime;
-            double realDuration = GetDoubleNoteDuration(note, ticksPerBeat, deltaTicks, timeSignature);
-
-            if (realDuration > 0)
-            {
-                keyNoteMap.Remove(keyCode); //hmmm, a chance the note doesn't get deleted
-            }
-            else
-            {
-                Console.WriteLine("That's a problem."); // throw error?
-                return 0; // temp something
-            }
-
-            return realDuration;
-        }
-
-        private double GetDoubleNoteDuration(Note note, int ticksPerBeat, int deltaTicks, TimeSignature timeSignature)
-        {
-            // Get the note duration and length.
-            double percentageOfBeatNote = (double)deltaTicks / ticksPerBeat;
-            double percentageOfWholeNote = percentageOfBeatNote * (1d / 4);
-
-            double noteDuration = -1;
-            double realDuration = -1;
-
-            // Find the first note with the appropriate duration that fits as closely as possible
-            for (int noteLength = 128; noteLength >= 1; noteLength /= 2)
-            {
-                double absoluteNoteLength = (1.0 / noteLength);
-
-                if (percentageOfWholeNote <= absoluteNoteLength)
-                {
-                    noteDuration = absoluteNoteLength;
-                    if (percentageOfWholeNote <= absoluteNoteLength / 2 * 1.5)
-                    {
-                        realDuration = absoluteNoteLength / 2 * 1.5; // note with dot
-                        noteDuration = absoluteNoteLength / 2;
-                        note.NumberOfDots = 1;
-                    }
-                    else
-                    {
-                        realDuration = noteDuration;
-                    }
-                    break;
-                }
-            }
-            if (noteDuration != -1) //temp
-            {
-                double noteLeft = percentageOfWholeNote % noteDuration; // TODO do something with this
-
-                int convertDuration = (int)(1d / noteDuration);
-                note.Duration = StaffSymbolFactory.Instance.GetStaffSymbolDuration(convertDuration);
-
-                //keyNoteMap.Remove(keyCode);
-
-                if (note == null)
-                {
-                    Console.WriteLine("fuuuu");
-                }
-                return realDuration;
-            }
-            else
-            {
-                return 0; //temp
-            }
-        }
-
-        public StaffSymbol ConstructRest(MidiEvent midiEvent, int ticksPerBeat, TimeSignature timeSignature)
-        {
-            Rest rest = new Rest();
-            Note emptyNote = new Note();
-
-            double duration = GetDoubleNoteDuration(emptyNote, ticksPerBeat, midiEvent.DeltaTicks, timeSignature);
-
-            rest.Duration = emptyNote.Duration;
-            rest.NumberOfDots = emptyNote.NumberOfDots;
-
-            return rest;
-        }
-
-        public StaffSymbol ConstructNote(int keyCode, MidiEvent midiEvent)
-        {
-            if (!keyNoteMap.ContainsKey(keyCode))
-            {
-                Note note = new Note();
-                note.StartTime = midiEvent.AbsoluteTicks;
-
-                int keyCodeStep = keyCode % 12;
-                int octave = keyCode / 12;
-
-                note.Step = keyCodeStep;
-                note.Octave = octave;
-
-                // Get Note Alter (Sharps)
-                int alter = 0;
-                if (keycodeDictionary[keyCodeStep].Contains("#"))
-                {
-                    alter++;
-                    note.StepString = keycodeDictionary[keyCodeStep - 1];
-                }
-                else
-                {
-                    note.StepString = keycodeDictionary[keyCodeStep];
-                }
-                note.Alter = alter;
-
-                keyNoteMap.Add(keyCode, note);
-
-                return note;
-            }
-            else
-            {
-                Console.WriteLine("Need solution! Maybe ignore this one because it's part of the same note? Check Absolute time");
-                return null;
-            }
+            };            
         }
 
         public StaffSymbolDuration GetStaffSymbolDuration(int duration)
@@ -274,99 +119,99 @@ namespace DPA_Musicsheets
         }
 
         // Not properly tested yet
-        public void FindChordsAndFixThem(Model.Score score) {
-            TimeSignature currentTimeSignature = null;
-            Tempo tempo = null;
-            int recordedStartTime = 0;
-            List<Note> chord = new List<Note>();
+        //public void FindChordsAndFixThem(Model.Score score) {
+        //    TimeSignature currentTimeSignature = null;
+        //    Tempo tempo = null;
+        //    int recordedStartTime = 0;
+        //    List<Note> chord = new List<Note>();
 
-            foreach (Staff staff in score.Staves)
-            {
-                for (int index = 0; index < staff.Symbols.Count; index++) // Potentially visitor pattern
-                {
-                    Model.StaffSymbol symbol = staff.Symbols[index];
-                    if (symbol is Model.Note)
-                    {
-                        var currentNote = symbol as Note; // Visitor pattern instead
-                        if (index > 0 && recordedStartTime == currentNote.StartTime)
-                        {
-                            if(!chord.Contains(staff.Symbols[index - 1])) 
-                            {
-                                chord.Add(staff.Symbols[index - 1] as Note);
-                            }
-                            chord.Add(currentNote);
-                        }
-                        else if (chord.Count > 2)
-                        {
-                            FixChordSequence(chord, staff, index, tempo, currentTimeSignature);
-                            chord.Clear();
-                        }
-                    }
-                    else if (symbol is TimeSignature)
-                    {
-                        currentTimeSignature = symbol as TimeSignature;
-                    }
-                    else if (symbol is Tempo)
-                    {
-                        tempo = symbol as Tempo;
-                    }
-                    else if (chord.Count > 2)
-                    {
-                        FixChordSequence(chord, staff, index, tempo, currentTimeSignature);
-                        chord.Clear();
-                    }
-                }
-            }
-        }
+        //    foreach (Staff staff in score.Staves)
+        //    {
+        //        for (int index = 0; index < staff.Symbols.Count; index++) // Potentially visitor pattern
+        //        {
+        //            Model.StaffSymbol symbol = staff.Symbols[index];
+        //            if (symbol is Model.Note)
+        //            {
+        //                var currentNote = symbol as Note; // Visitor pattern instead
+        //                if (index > 0 && recordedStartTime == currentNote.StartTime)
+        //                {
+        //                    if(!chord.Contains(staff.Symbols[index - 1])) 
+        //                    {
+        //                        chord.Add(staff.Symbols[index - 1] as Note);
+        //                    }
+        //                    chord.Add(currentNote);
+        //                }
+        //                else if (chord.Count > 2)
+        //                {
+        //                    FixChordSequence(chord, staff, index, tempo, currentTimeSignature);
+        //                    chord.Clear();
+        //                }
+        //            }
+        //            else if (symbol is TimeSignature)
+        //            {
+        //                currentTimeSignature = symbol as TimeSignature;
+        //            }
+        //            else if (symbol is Tempo)
+        //            {
+        //                tempo = symbol as Tempo;
+        //            }
+        //            else if (chord.Count > 2)
+        //            {
+        //                FixChordSequence(chord, staff, index, tempo, currentTimeSignature);
+        //                chord.Clear();
+        //            }
+        //        }
+        //    }
+        //}
 
-        private void FixChordSequence(List<Note> chord, Staff staff, int index, Tempo tempo, TimeSignature timeSignature)
-        {
-            int indexClone = index;
+        //private void FixChordSequence(List<Note> chord, Staff staff, int index, Tempo tempo, TimeSignature timeSignature)
+        //{
+        //    int indexClone = index;
 
-            // startTime + deltaTicks = nextNote after chord
-            bool loop = true;
-            Note nextNote = null;
-            while (loop) {
-                StaffSymbol symbol = staff.Symbols[index];
-                if (symbol is Model.Note) {
-                    nextNote = symbol as Note;
-                    loop = false;
-                }
-                index++;
-            }
+        //    // startTime + deltaTicks = nextNote after chord
+        //    bool loop = true;
+        //    Note nextNote = null;
+        //    while (loop) {
+        //        StaffSymbol symbol = staff.Symbols[index];
+        //        if (symbol is Model.Note) {
+        //            nextNote = symbol as Note;
+        //            loop = false;
+        //        }
+        //        index++;
+        //    }
 
-            int deltaTicks = nextNote.StartTime - chord[0].StartTime;
-            Note noteDurationClone = new Note();
+        //    int deltaTicks = nextNote.StartTime - chord[0].StartTime;
+        //    Note noteDurationClone = new Note();
 
-            // deltaTicks = duration -> lastNote in chord
-            GetDoubleNoteDuration(noteDurationClone, tempo.BeatsPerMinute, deltaTicks, timeSignature);
+        //    // deltaTicks = duration -> lastNote in chord
+        //    GetDoubleNoteDuration(noteDurationClone, tempo.BeatsPerMinute, deltaTicks, timeSignature);
 
-            if (noteDurationClone.Duration == 0)
-            {
-                throw new Exception(); // this is not supposed to happen
-            }
+        //    if (noteDurationClone.Duration == 0)
+        //    {
+        //        throw new Exception(); // this is not supposed to happen
+        //    }
 
-            //Get correct sequence for chord (only need to find which note to swap with the last note in the chord)
-            for (int i = 0; i < chord.Count; i++)
-            {
-                if (chord[i].Duration == noteDurationClone.Duration)
-                {
-                    // found last note in Chord
-                    Note lastChordNote = chord[chord.Count - 1];
-                    if (lastChordNote != chord[i]) // swap notes
-                    {
-                        chord[chord.Count - 1] = chord[i];
-                        chord[i] = lastChordNote;
-                    }
-                    break;
-                }
-            }
+        //    //Get correct sequence for chord (only need to find which note to swap with the last note in the chord)
+        //    for (int i = 0; i < chord.Count; i++)
+        //    {
+        //        if (chord[i].Duration == noteDurationClone.Duration)
+        //        {
+        //            // found last note in Chord
+        //            Note lastChordNote = chord[chord.Count - 1];
+        //            if (lastChordNote != chord[i]) // swap notes
+        //            {
+        //                chord[chord.Count - 1] = chord[i];
+        //                chord[i] = lastChordNote;
+        //            }
+        //            break;
+        //        }
+        //    }
 
-            for (int i = indexClone - chord.Count - 1, j = 0; i < indexClone; i++, j++)
-            {
-                staff.Symbols[i] = chord[j]; // swap correct sequence of the chord into the Symbols list
-            }
-        }
+        //    for (int i = indexClone - chord.Count - 1, j = 0; i < indexClone; i++, j++)
+        //    {
+        //        staff.Symbols[i] = chord[j]; // swap correct sequence of the chord into the Symbols list
+        //    }
+        //}
 
         internal StaffSymbol ConstructRest(MidiEvent midiEvent)
         {

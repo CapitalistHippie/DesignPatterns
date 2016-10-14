@@ -68,15 +68,16 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="MessageTypeHandlers\ChannelMessageHandler.cs" />
-    <Compile Include="MessageTypeHandlers\IMessageTypeHandler.cs" />
-    <Compile Include="MessageTypeHandlers\IMetaTypeHandler.cs" />
-    <Compile Include="MessageTypeHandlers\MetaInstrumentNameHandler.cs" />
-    <Compile Include="MessageTypeHandlers\MetaMessageHandler.cs" />
-    <Compile Include="MessageTypeHandlers\MetaTempoHandler.cs" />
-    <Compile Include="MessageTypeHandlers\MetaTimeSignatureHandler.cs" />
-    <Compile Include="MessageTypeHandlers\MetaTrackNameHandler.cs" />
+    <Compile Include="MidiEventHandlers\ChannelEventHandler.cs" />
+    <Compile Include="MidiEventHandlers\IEventHandler.cs" />
+    <Compile Include="MidiEventHandlers\IMetaEventHandler.cs" />
+    <Compile Include="MidiEventHandlers\MetaInstrumentEventNameHandler.cs" />
+    <Compile Include="MidiEventHandlers\MetaEventHandler.cs" />
+    <Compile Include="MidiEventHandlers\MetaTempoEventHandler.cs" />
+    <Compile Include="MidiEventHandlers\MetaTimeSignatureEventHandler.cs" />
+    <Compile Include="MidiEventHandlers\MetaTrackNameEventHandler.cs" />
     <Compile Include="Model\Barline.cs" />
+    <Compile Include="Model\IScoreObserver.cs" />
     <Compile Include="Model\IStaffObserver.cs" />
     <Compile Include="Model\LilyPondStaffAdapter.cs" />
     <Compile Include="MidiTrack.cs" />
@@ -84,8 +85,11 @@
     <Compile Include="Model\SheetMusicVisitor.cs" />
     <Compile Include="Model\Tempo.cs" />
     <Compile Include="Model\Score.cs" />
+    <Compile Include="ScoreBuilders\IScoreBuilder.cs" />
+    <Compile Include="ScoreBuilders\MidiScoreBuilder.cs" />
+    <Compile Include="ScoreBuilders\LilyPondScoreBuilder.cs" />
     <Compile Include="StaffSymbolFactory.cs" />
-    <Compile Include="ScoreBuilder.cs" />
+    <Compile Include="ScoreBuilders\ScoreBuilder.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

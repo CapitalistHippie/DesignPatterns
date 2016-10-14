@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using DPA_Musicsheets.ScoreBuilders;
+using Microsoft.Win32;
 using PSAMControlLibrary;
 using Sanford.Multimedia.Midi;
 using System;
@@ -33,7 +34,8 @@ namespace DPA_Musicsheets
         private OutputDevice                    outputDevice = new OutputDevice(0);
         private MidiPlayer                      player;
         public ObservableCollection<MidiTrack>  MidiTracks { get; private set; }
-        //private Model.SheetMusicVisitor         smVisitor;
+
+        private IScoreBuilder                   scoreBuilder = new ScoreBuilder();
 
         public MainWindow()
         {
@@ -50,8 +52,10 @@ namespace DPA_Musicsheets
 
             Model.TimeSignature currentTimeSignature = null;
 
-            foreach (Model.Staff staff in score.Staves)
+            for (int i = 0; i < score.GetAmountOfStaves(); i++)
             {
+                Model.Staff staff = score.GetStaff(i);
+
                 ScrollViewer scrollViewer = new ScrollViewer();
                 StackPanel scoreStackPanel = new StackPanel(); // TODO fix width
 
@@ -68,11 +72,11 @@ namespace DPA_Musicsheets
 
                 Model.SheetMusicVisitor smVisitor = new Model.SheetMusicVisitor(staff, incipitViewer, scoreStackPanel, ContentSheetControl.ActualWidth);
 
-                for (int i = 0; i < staff.Symbols.Count; i++)
+                for (int j = 0; j < staff.Symbols.Count; j++)
                 {
-                    Model.StaffSymbol symbol = staff.Symbols[i];
+                    Model.StaffSymbol symbol = staff.Symbols[j];
                     smVisitor.CheckIfNewStaffNeeded();
-                    symbol.Accept(smVisitor, i);
+                    symbol.Accept(smVisitor, j);
                 }
 
                 TabItem tab = new TabItem();
@@ -86,8 +90,6 @@ namespace DPA_Musicsheets
             //        incipitViewer.AddMusicalSymbol(new Clef(ClefType.GClef, 2));
             //        incipitViewer.AddMusicalSymbol(new TimeSignature(TimeSignatureType.Numbers, (uint)currentTimeSignature.Measure, (uint)currentTimeSignature.NumberOfBeats));
             //    }
-
-                
 
             //    int index = 1;
 
@@ -121,7 +123,7 @@ namespace DPA_Musicsheets
 
             //            //NoteTieType noteTieType = NoteTieType.None; // TODO later
             //            NoteBeamType noteBeamType = NoteBeamType.Single; // default
-                        
+
             //            bool chord = false; // IsChord
 
             //            if (!continueNoteBeam)
@@ -365,26 +367,18 @@ namespace DPA_Musicsheets
             {
                 // Show the file path in the text box.
                 FilePathTextBox.Text = openFileDialog.FileName;
+                Model.Score score = scoreBuilder.BuildScore(FilePathTextBox.Text);
 
-                string extension = System.IO.Path.GetExtension(openFileDialog.FileName);
-
-                Model.Score score = null;
-
-                switch (extension)
+                if (score == null)
                 {
-                    case ".mid":
-                        // Show the MIDI tracks content for debugging.
-                        ShowMidiTracks(MidiReader.ReadMidi(FilePathTextBox.Text));
-                        // Load score and display for our viewing pleasure.
-                        //score = ScoreBuilder.Instance.BuildScoreFromMidi(FilePathTextBox.Text);
-                        break;
-                    case ".ly":
-                        // Build a score from the LilyPond.
-                        score = ScoreBuilder.Instance.BuildScoreFromLilyPond(FilePathTextBox.Text);
-                        break;
+                    MessageBox.Show("Unsupported file type.");
+                    return;
                 }
 
                 FillPSAMViewer(score);
+
+                if (System.IO.Path.GetExtension(openFileDialog.FileName) == ".mid")
+                    ShowMidiTracks(MidiReader.ReadMidi(FilePathTextBox.Text));                
             }
         }
 

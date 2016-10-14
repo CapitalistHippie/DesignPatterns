@@ -5,10 +5,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace DPA_Musicsheets.MessageTypeHandlers
+namespace DPA_Musicsheets.MidiEventHandlers
 {
-    interface IMetaTypeHandler
+    interface IMetaEventHandler
     {
-        void Execute(Staff staff, MetaMessage metaMessage, int index);
+        void Handle(Score score, Staff activeStaff, MidiEvent midiEvent, int trackIndex);
     }
 }
