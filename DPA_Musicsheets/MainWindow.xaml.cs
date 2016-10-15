@@ -44,14 +44,11 @@ namespace DPA_Musicsheets
 
             InitializeComponent();
             DataContext = MidiTracks;
-            //smVisitor = new Model.SheetMusicVisitor();
         }
 
-        private void FillPSAMViewer(Model.Score score)
+        private void FillScoreViewer(Model.Score score)
         {
             ContentSheetControl.Items.Clear();
-
-            Model.TimeSignature currentTimeSignature = null;
 
             double width = ContentSheetControl.ActualWidth - 75;
 
@@ -73,7 +70,7 @@ namespace DPA_Musicsheets
 
                 scoreStackPanel.Children.Add(incipitViewer);
 
-                Model.SheetMusicVisitor smVisitor = new Model.SheetMusicVisitor(staff, incipitViewer, scoreStackPanel, width);
+                Model.ScoreVisitor smVisitor = new Model.ScoreVisitor(staff, incipitViewer, scoreStackPanel, width);
 
                 for (int j = 0; j < staff.Symbols.Count; j++)
                 {
@@ -243,7 +240,7 @@ namespace DPA_Musicsheets
                     return;
                 }
 
-                FillPSAMViewer(score);
+                FillScoreViewer(score);
                 currentScore = score;
 
                 if (System.IO.Path.GetExtension(openFileDialog.FileName) == ".mid")
@@ -292,8 +289,28 @@ namespace DPA_Musicsheets
         {
             if (currentScore != null)
             {
-                FillPSAMViewer(currentScore); // so dirteh :')
+                FillScoreViewer(currentScore); // so dirteh :')
             }
+        }
+
+        private void OnEditorUndoButtonClick(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void OnEditorRedoButtonClick(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void OnEditorSaveButtonClick(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void OnEditorSaveAsButtonClick(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

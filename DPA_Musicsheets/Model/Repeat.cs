@@ -16,7 +16,7 @@ namespace DPA_Musicsheets.Model
     {
         public RepeatType Type { get; set; }
 
-        public override void Accept(SheetMusicVisitor smVisitor, int index)
+        public override void Accept(ScoreVisitor smVisitor, int index)
         {
             smVisitor.Visit(this);
         }

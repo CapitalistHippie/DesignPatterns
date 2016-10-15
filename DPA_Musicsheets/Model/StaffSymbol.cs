@@ -8,6 +8,6 @@ namespace DPA_Musicsheets.Model
 {
     public abstract class StaffSymbol
     {
-        public abstract void Accept(SheetMusicVisitor smVisitor, int index);
+        public abstract void Accept(ScoreVisitor smVisitor, int index);
     }
 }

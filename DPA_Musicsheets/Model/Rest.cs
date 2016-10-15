@@ -11,7 +11,7 @@ namespace DPA_Musicsheets.Model
         public StaffSymbolDuration Duration { get; set; }
         public int NumberOfDots { get; set; }
 
-        public override void Accept(SheetMusicVisitor smVisitor, int index)
+        public override void Accept(ScoreVisitor smVisitor, int index)
         {
             smVisitor.Visit(this);
         }

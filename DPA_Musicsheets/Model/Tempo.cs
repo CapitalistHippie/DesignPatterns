@@ -10,7 +10,7 @@ namespace DPA_Musicsheets.Model
     {
         public int BeatsPerMinute { get; set; }
 
-        public override void Accept(SheetMusicVisitor smVisitor, int index)
+        public override void Accept(ScoreVisitor smVisitor, int index)
         {
             smVisitor.Visit(this);
         }

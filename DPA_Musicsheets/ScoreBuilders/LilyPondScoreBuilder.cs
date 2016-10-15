@@ -43,22 +43,16 @@ namespace DPA_Musicsheets.ScoreBuilders
 
         private int OctaveOffset(char relativeStep, char step)
         {
+            // ASCII to number
             int relativeStepNumber = NOTE_NUMBER_CONVERSION_TABLE[relativeStep];
             int stepNumber = NOTE_NUMBER_CONVERSION_TABLE[step];
 
             int difference = relativeStepNumber - stepNumber;
 
-            if (difference < 0)
-            {
-                if (difference < -3)
-                    return -1;
-            }
-            else
-            {
-                if (difference > 3)
-                    return 1;
-            }            
-            
+            if (difference < -3)
+                return -1;
+            if (difference > 3)
+                return 1;
             return 0;
         }
 

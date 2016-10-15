@@ -8,7 +8,7 @@ using System.Windows.Controls;
 
 namespace DPA_Musicsheets.Model
 {
-    public class SheetMusicVisitor
+    public class ScoreVisitor
     {
         private Staff staff;
         private IncipitViewerWPF incipitViewer;
@@ -29,7 +29,7 @@ namespace DPA_Musicsheets.Model
         private Dictionary<StaffSymbolDuration, double> eightsConversionDurationDictionary;
         
 
-        public SheetMusicVisitor(Staff staff, IncipitViewerWPF incipitViewer, StackPanel scoreStackPanel, double width)
+        public ScoreVisitor(Staff staff, IncipitViewerWPF incipitViewer, StackPanel scoreStackPanel, double width)
         {
             this.staff = staff;
             this.incipitViewer = incipitViewer;
