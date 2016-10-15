@@ -36,6 +36,7 @@ namespace DPA_Musicsheets
         public ObservableCollection<MidiTrack>  MidiTracks { get; private set; }
 
         private IScoreBuilder                   scoreBuilder = new ScoreBuilder();
+        private Model.Score                     currentScore;
 
         public MainWindow()
         {
@@ -243,6 +244,7 @@ namespace DPA_Musicsheets
                 }
 
                 FillPSAMViewer(score);
+                currentScore = score;
 
                 if (System.IO.Path.GetExtension(openFileDialog.FileName) == ".mid")
                     ShowMidiTracks(MidiReader.ReadMidi(FilePathTextBox.Text));                
@@ -288,10 +290,10 @@ namespace DPA_Musicsheets
 
         private void OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            //foreach (PSAMWPFControlLibrary.IncipitViewerWPF staff in ScoreStackPanel.Children)
-            //{
-            //    staff.Width = ScoreStackPanel.ActualWidth;
-            //}
+            if (currentScore != null)
+            {
+                FillPSAMViewer(currentScore); // so dirteh :')
+            }
         }
     }
 }
