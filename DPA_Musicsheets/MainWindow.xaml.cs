@@ -52,6 +52,8 @@ namespace DPA_Musicsheets
 
             Model.TimeSignature currentTimeSignature = null;
 
+            double width = ContentSheetControl.ActualWidth - 75;
+
             for (int i = 0; i < score.GetAmountOfStaves(); i++)
             {
                 Model.Staff staff = score.GetStaff(i);
@@ -66,11 +68,11 @@ namespace DPA_Musicsheets
                 Thickness margin = incipitViewer.Margin;
                 margin.Top += 50;
                 incipitViewer.Margin = margin;
-                incipitViewer.Width = ContentSheetControl.ActualWidth;
+                incipitViewer.Width = width;
 
                 scoreStackPanel.Children.Add(incipitViewer);
 
-                Model.SheetMusicVisitor smVisitor = new Model.SheetMusicVisitor(staff, incipitViewer, scoreStackPanel, ContentSheetControl.ActualWidth);
+                Model.SheetMusicVisitor smVisitor = new Model.SheetMusicVisitor(staff, incipitViewer, scoreStackPanel, width);
 
                 for (int j = 0; j < staff.Symbols.Count; j++)
                 {
@@ -84,141 +86,6 @@ namespace DPA_Musicsheets
                 tab.Content = scrollViewer;
                 ContentSheetControl.Items.Add(tab);
             }
-
-            //    if (currentTimeSignature != null)
-            //    {
-            //        incipitViewer.AddMusicalSymbol(new Clef(ClefType.GClef, 2));
-            //        incipitViewer.AddMusicalSymbol(new TimeSignature(TimeSignatureType.Numbers, (uint)currentTimeSignature.Measure, (uint)currentTimeSignature.NumberOfBeats));
-            //    }
-
-            //    int index = 1;
-
-            //    bool continueNoteBeam = false;
-            //    int amountNoteBeams = 1;
-
-            //    NoteStemDirection noteStemDirection = NoteStemDirection.Up; // default
-
-            //    for (int i = 0; i < staff.Symbols.Count; i++)
-            //    {
-            //        Model.StaffSymbol symbol = staff.Symbols[i];
-            //        symbol.Accept(smVisitor, index);
-                    
-            //        if (index >= 6)
-            //        {
-            //            index = 1;
-            //            incipitViewer = new PSAMWPFControlLibrary.IncipitViewerWPF();
-            //            incipitViewer.Width = ContentSheetControl.ActualWidth;
-
-            //            scoreStackPanel.Children.Add(incipitViewer);
-            //            if (currentTimeSignature != null)
-            //            {
-            //                incipitViewer.AddMusicalSymbol(new Clef(ClefType.GClef, 2)); //hardcoded -> fix
-            //                incipitViewer.AddMusicalSymbol(new TimeSignature(TimeSignatureType.Numbers, (uint)currentTimeSignature.Measure, (uint)currentTimeSignature.NumberOfBeats));
-            //            }
-
-            //        }
-            //        if (symbol is Model.Note) // TODO Visitor pattern
-            //        {
-            //            var currentNote = symbol as Model.Note; // Visitor pattern instead
-
-            //            //NoteTieType noteTieType = NoteTieType.None; // TODO later
-            //            NoteBeamType noteBeamType = NoteBeamType.Single; // default
-
-            //            bool chord = false; // IsChord
-
-            //            if (!continueNoteBeam)
-            //            {
-            //                if (currentNote.Octave - 1 >= 5)
-            //                {
-            //                    noteStemDirection = NoteStemDirection.Down;
-            //                }
-            //                else
-            //                {
-            //                    noteStemDirection = NoteStemDirection.Up;
-            //                }
-            //            }
-
-
-
-            //            if (staff.Symbols.Count > i + 1)
-            //            {
-            //                Model.StaffSymbol nextSymbol = staff.Symbols[i + 1];
-
-            //                if (nextSymbol is Model.Note)
-            //                {
-            //                    var nextNote = nextSymbol as Model.Note;
-
-            //                    if (continueNoteBeam)
-            //                    {
-            //                        if (amountNoteBeams >= 3)
-            //                        {
-            //                            noteBeamType = NoteBeamType.End;
-            //                            amountNoteBeams = 1;
-            //                            continueNoteBeam = false;
-            //                        }
-            //                        else if (nextNote.Duration == currentNote.Duration)
-            //                        {
-            //                            noteBeamType = NoteBeamType.Continue;
-            //                            amountNoteBeams++;
-            //                        }
-            //                        else
-            //                        {
-            //                            noteBeamType = NoteBeamType.End;
-            //                            amountNoteBeams = 1;
-            //                            continueNoteBeam = false;
-            //                        }
-            //                    }
-            //                    else
-            //                    {
-            //                        if (nextNote.Duration == currentNote.Duration &&
-            //                            StaffSymbolFactory.Instance.GetIntDuration(currentNote.Duration) > 4) // everything with a shorter duration than quarter notes uses beams, quarter and higher don't
-            //                        {
-            //                            noteBeamType = NoteBeamType.Start;
-            //                            continueNoteBeam = true;
-            //                        }
-            //                    }
-
-            //                    if (nextNote.StartTime != 0 &&  nextNote.StartTime == currentNote.StartTime)
-            //                    {
-            //                        chord = true;
-            //                    }
-            //                }
-            //                else if (continueNoteBeam)
-            //                {
-            //                    noteBeamType = NoteBeamType.End;
-            //                    amountNoteBeams = 1;
-            //                    continueNoteBeam = false;
-            //                }
-            //            }
-
-            //            //staff.
-            //            if (currentNote.Duration != 0) //TODO temp, dirteh (to avoid errors for now)
-            //            {
-            //                //incipitViewer.AddMusicalSymbol(new Note(currentNote.StepString, currentNote.Alter, currentNote.Octave - 1, StaffSymbolFactory.Instance.GetMusicalSymbolDuration(currentNote.Duration), noteStemDirection, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { NumberOfDots = currentNote.NumberOfDots, IsChordElement = chord });
-            //                incipitViewer.AddMusicalSymbol(new Note(currentNote.StepString, currentNote.Alter, currentNote.Octave - 1, StaffSymbolFactory.Instance.GetMusicalSymbolDuration(currentNote.Duration), noteStemDirection, NoteTieType.None, new List<NoteBeamType>() { noteBeamType }) { NumberOfDots = currentNote.NumberOfDots, IsChordElement = chord });
-            //            }
-
-            //        }
-            //        else if (symbol is Model.Rest)
-            //        {
-            //            var currentRest = symbol as Model.Rest;
-
-            //            incipitViewer.AddMusicalSymbol(new Rest(StaffSymbolFactory.Instance.GetMusicalSymbolDuration(currentRest.Duration)));
-            //        }
-            //        else if (symbol is Model.Barline) // Visitor pattern
-            //        {
-            //            incipitViewer.AddMusicalSymbol(new Barline());
-            //            index++;
-            //        }
-            //        else if (symbol is Model.TimeSignature) // Visitor pattern
-            //        {
-
-            //            currentTimeSignature = symbol as Model.TimeSignature;
-            //            incipitViewer.AddMusicalSymbol(new Clef(ClefType.GClef, 2));
-            //            incipitViewer.AddMusicalSymbol(new TimeSignature(TimeSignatureType.Numbers, (uint) currentTimeSignature.Measure, (uint) currentTimeSignature.NumberOfBeats));
-            //        }
-            //    }
-            //}
 
             ContentSheetControl.Items.Add(ReturnTestTabItem());
         }

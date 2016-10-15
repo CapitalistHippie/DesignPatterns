@@ -17,6 +17,10 @@ namespace DPA_Musicsheets.MidiEventHandlers
             timeSignature.Measure = bytes[0];
             timeSignature.NumberOfBeats = (int)Math.Pow(2, bytes[1]);
 
+            Clef hardcodedClef = new Clef();
+            hardcodedClef.Type = ClefType.G; // default
+            activeStaff.AddSymbol(hardcodedClef);
+
             activeStaff.AddSymbol(timeSignature);
         }
     }

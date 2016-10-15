@@ -12,10 +12,10 @@ namespace DPA_Musicsheets
     {
         private static StaffSymbolFactory instance;
         private Dictionary<int, StaffSymbolDuration> staffSymbolDurationDictionary;
-        private Dictionary<StaffSymbolDuration, int> intDurationDictionary; //staffSymbolDurationDictionary reversed
         private Dictionary<StaffSymbolDuration, PSAMControlLibrary.MusicalSymbolDuration> psamConvertDictionary;
         private Dictionary<int, String> keycodeDictionary;
         public Dictionary<string, string> lilyPondNoteDictionary;
+        private Dictionary<StaffSymbolDuration, int> intDurationDictionary; //staffSymbolDurationDictionary reversed
 
 
         public static StaffSymbolFactory Instance
@@ -41,7 +41,7 @@ namespace DPA_Musicsheets
                 { 64, StaffSymbolDuration.SIXTY_FOURTH },
                 { 128, StaffSymbolDuration.HUNDRED_TWENTY_EIGHTH }
             };
-            intDurationDictionary = staffSymbolDurationDictionary.ToDictionary(x => x.Value, x => x.Key); //staffSymbolDurationDictionary reversed
+            
 
             psamConvertDictionary = new Dictionary<StaffSymbolDuration, PSAMControlLibrary.MusicalSymbolDuration>
             {
@@ -85,7 +85,9 @@ namespace DPA_Musicsheets
                 {"a", "A"},
                 {"as", "A#"},
                 {"b", "B"},
-            };            
+            };
+
+            intDurationDictionary = staffSymbolDurationDictionary.ToDictionary(x => x.Value, x => x.Key); //staffSymbolDurationDictionary reversed
         }
 
         public StaffSymbolDuration GetStaffSymbolDuration(int duration)
@@ -93,16 +95,6 @@ namespace DPA_Musicsheets
             if (staffSymbolDurationDictionary.ContainsKey(duration))
             {
                 return staffSymbolDurationDictionary[duration];
-            }
-
-            throw new KeyNotFoundException();
-        }
-
-        public int GetIntDuration(StaffSymbolDuration duration) 
-        {
-            if (intDurationDictionary.ContainsKey(duration))
-            {
-                return intDurationDictionary[duration];
             }
 
             throw new KeyNotFoundException();
@@ -118,104 +110,14 @@ namespace DPA_Musicsheets
             throw new KeyNotFoundException();
         }
 
-        // Not properly tested yet
-        //public void FindChordsAndFixThem(Model.Score score) {
-        //    TimeSignature currentTimeSignature = null;
-        //    Tempo tempo = null;
-        //    int recordedStartTime = 0;
-        //    List<Note> chord = new List<Note>();
-
-        //    foreach (Staff staff in score.Staves)
-        //    {
-        //        for (int index = 0; index < staff.Symbols.Count; index++) // Potentially visitor pattern
-        //        {
-        //            Model.StaffSymbol symbol = staff.Symbols[index];
-        //            if (symbol is Model.Note)
-        //            {
-        //                var currentNote = symbol as Note; // Visitor pattern instead
-        //                if (index > 0 && recordedStartTime == currentNote.StartTime)
-        //                {
-        //                    if(!chord.Contains(staff.Symbols[index - 1])) 
-        //                    {
-        //                        chord.Add(staff.Symbols[index - 1] as Note);
-        //                    }
-        //                    chord.Add(currentNote);
-        //                }
-        //                else if (chord.Count > 2)
-        //                {
-        //                    FixChordSequence(chord, staff, index, tempo, currentTimeSignature);
-        //                    chord.Clear();
-        //                }
-        //            }
-        //            else if (symbol is TimeSignature)
-        //            {
-        //                currentTimeSignature = symbol as TimeSignature;
-        //            }
-        //            else if (symbol is Tempo)
-        //            {
-        //                tempo = symbol as Tempo;
-        //            }
-        //            else if (chord.Count > 2)
-        //            {
-        //                FixChordSequence(chord, staff, index, tempo, currentTimeSignature);
-        //                chord.Clear();
-        //            }
-        //        }
-        //    }
-        //}
-
-        //private void FixChordSequence(List<Note> chord, Staff staff, int index, Tempo tempo, TimeSignature timeSignature)
-        //{
-        //    int indexClone = index;
-
-        //    // startTime + deltaTicks = nextNote after chord
-        //    bool loop = true;
-        //    Note nextNote = null;
-        //    while (loop) {
-        //        StaffSymbol symbol = staff.Symbols[index];
-        //        if (symbol is Model.Note) {
-        //            nextNote = symbol as Note;
-        //            loop = false;
-        //        }
-        //        index++;
-        //    }
-
-        //    int deltaTicks = nextNote.StartTime - chord[0].StartTime;
-        //    Note noteDurationClone = new Note();
-
-        //    // deltaTicks = duration -> lastNote in chord
-        //    GetDoubleNoteDuration(noteDurationClone, tempo.BeatsPerMinute, deltaTicks, timeSignature);
-
-        //    if (noteDurationClone.Duration == 0)
-        //    {
-        //        throw new Exception(); // this is not supposed to happen
-        //    }
-
-        //    //Get correct sequence for chord (only need to find which note to swap with the last note in the chord)
-        //    for (int i = 0; i < chord.Count; i++)
-        //    {
-        //        if (chord[i].Duration == noteDurationClone.Duration)
-        //        {
-        //            // found last note in Chord
-        //            Note lastChordNote = chord[chord.Count - 1];
-        //            if (lastChordNote != chord[i]) // swap notes
-        //            {
-        //                chord[chord.Count - 1] = chord[i];
-        //                chord[i] = lastChordNote;
-        //            }
-        //            break;
-        //        }
-        //    }
-
-        //    for (int i = indexClone - chord.Count - 1, j = 0; i < indexClone; i++, j++)
-        //    {
-        //        staff.Symbols[i] = chord[j]; // swap correct sequence of the chord into the Symbols list
-        //    }
-        //}
-
-        internal StaffSymbol ConstructRest(MidiEvent midiEvent)
+        public int GetIntDuration(StaffSymbolDuration duration)
         {
-            throw new NotImplementedException();
+            if (intDurationDictionary.ContainsKey(duration))
+            {
+                return intDurationDictionary[duration];
+            }
+
+            throw new KeyNotFoundException();
         }
     }
 }

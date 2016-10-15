@@ -25,12 +25,14 @@ namespace DPA_Musicsheets.Model
 
         private Dictionary<ClefType, PSAMControlLibrary.ClefType> psamClefTypeConversionDictionary;
         private Dictionary<StaffSymbolDuration, double> eightsConversionDurationDictionary;
+        
 
         public SheetMusicVisitor(Staff staff, IncipitViewerWPF incipitViewer, StackPanel scoreStackPanel, double width)
         {
             this.staff = staff;
             this.incipitViewer = incipitViewer;
             this.scoreStackPanel = scoreStackPanel;
+            this.width = width;
             
             amountEights = 0;
 
@@ -53,6 +55,8 @@ namespace DPA_Musicsheets.Model
                 { StaffSymbolDuration.SIXTY_FOURTH, 1 },
                 { StaffSymbolDuration.HUNDRED_TWENTY_EIGHTH, 1 },
             };
+
+            
         }
 
         public void CheckIfNewStaffNeeded()
@@ -165,8 +169,7 @@ namespace DPA_Musicsheets.Model
 
             //throw new NotImplementedException();
         }
-
-
+        
         private NoteBeamType GetNoteBeamType(Note currentNote, int index)
         {
             NoteBeamType noteBeamType = NoteBeamType.Single; // default
@@ -225,6 +228,102 @@ namespace DPA_Musicsheets.Model
             }
 
             return noteBeamType;
+        }
+
+        // Not properly tested yet
+        public void FindChordsAndFixThem(Model.Score score) {
+        //    TimeSignature currentTimeSignature = null;
+        //    Tempo tempo = null;
+        //    int recordedStartTime = 0;
+        //    List<Note> chord = new List<Note>();
+
+        //    foreach (Staff staff in score.Staves)
+        //    {
+        //        for (int index = 0; index < staff.Symbols.Count; index++) // Potentially visitor pattern
+        //        {
+        //            Model.StaffSymbol symbol = staff.Symbols[index];
+        //            if (symbol is Model.Note)
+        //            {
+        //                var currentNote = symbol as Note; // Visitor pattern instead
+        //                if (index > 0 && recordedStartTime == currentNote.StartTime)
+        //                {
+        //                    if(!chord.Contains(staff.Symbols[index - 1])) 
+        //                    {
+        //                        chord.Add(staff.Symbols[index - 1] as Note);
+        //                    }
+        //                    chord.Add(currentNote);
+        //                }
+        //                else if (chord.Count > 2)
+        //                {
+        //                    FixChordSequence(chord, staff, index, tempo, currentTimeSignature);
+        //                    chord.Clear();
+        //                }
+        //            }
+        //            else if (symbol is TimeSignature)
+        //            {
+        //                currentTimeSignature = symbol as TimeSignature;
+        //            }
+        //            else if (symbol is Tempo)
+        //            {
+        //                tempo = symbol as Tempo;
+        //            }
+        //            else if (chord.Count > 2)
+        //            {
+        //                FixChordSequence(chord, staff, index, tempo, currentTimeSignature);
+        //                chord.Clear();
+        //            }
+        //        }
+        //    }
+        }
+
+        // Not properly tested yet
+        private void FixChordSequence(List<Note> chord, Staff staff, int index, Tempo tempo, TimeSignature timeSignature)
+        {
+        //    int indexClone = index;
+
+        //    // startTime + deltaTicks = nextNote after chord
+        //    bool loop = true;
+        //    Note nextNote = null;
+        //    while (loop) {
+        //        StaffSymbol symbol = staff.Symbols[index];
+        //        if (symbol is Model.Note) {
+        //            nextNote = symbol as Note;
+        //            loop = false;
+        //        }
+        //        index++;
+        //    }
+
+        //    int deltaTicks = nextNote.StartTime - chord[0].StartTime;
+        //    Note noteDurationClone = new Note();
+
+        //    // deltaTicks = duration -> lastNote in chord
+        //    GetDoubleNoteDuration(noteDurationClone, tempo.BeatsPerMinute, deltaTicks, timeSignature);
+
+        //    if (noteDurationClone.Duration == 0)
+        //    {
+        //        throw new Exception(); // this is not supposed to happen
+        //    }
+
+        //    //Get correct sequence for chord (only need to find which note to swap with the last note in the chord)
+        //    for (int i = 0; i < chord.Count; i++)
+        //    {
+        //        if (chord[i].Duration == noteDurationClone.Duration)
+        //        {
+        //            // found last note in Chord
+        //            Note lastChordNote = chord[chord.Count - 1];
+        //            if (lastChordNote != chord[i]) // swap notes
+        //            {
+        //                chord[chord.Count - 1] = chord[i];
+        //                chord[i] = lastChordNote;
+        //            }
+        //            break;
+        //        }
+        //    }
+
+        //    for (int i = indexClone - chord.Count - 1, j = 0; i < indexClone; i++, j++)
+        //    {
+        //        staff.Symbols[i] = chord[j]; // swap correct sequence of the chord into the Symbols list
+        //    }
         }
     }
 }
