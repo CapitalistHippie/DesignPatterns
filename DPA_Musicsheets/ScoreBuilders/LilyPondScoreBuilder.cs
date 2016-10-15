@@ -13,6 +13,55 @@ namespace DPA_Musicsheets.ScoreBuilders
 {
     public class LilyPondScoreBuilder : IScoreBuilder
     {
+        private static readonly int                         DEFAULT_RELATIVE_OCTAVE = 4;
+        private static readonly Dictionary<string, string>  NOTE_CONVERSION_TABLE   = new Dictionary<string, string>
+        {
+            { "c",   "C" },
+            { "cis", "C#" },
+            { "d",   "D" },
+            { "dis", "D#" },
+            { "e",   "E" },
+            { "f",   "F" },
+            { "fis", "F#" },
+            { "g",   "G" },
+            { "gis", "G#" },
+            { "a",   "A" },
+            { "as",  "A#" },
+            { "b",   "B" },
+        };
+
+        private static readonly Dictionary<char, int> NOTE_NUMBER_CONVERSION_TABLE = new Dictionary<char, int>
+        {
+            { 'c', 1 },
+            { 'd', 2 },
+            { 'e', 3 },
+            { 'f', 4 },
+            { 'g', 5 },
+            { 'a', 6 },
+            { 'b', 7 },
+        };
+
+        private int OctaveOffset(char relativeStep, char step)
+        {
+            int relativeStepNumber = NOTE_NUMBER_CONVERSION_TABLE[relativeStep];
+            int stepNumber = NOTE_NUMBER_CONVERSION_TABLE[step];
+
+            int difference = relativeStepNumber - stepNumber;
+
+            if (difference < 0)
+            {
+                if (difference < -3)
+                    return -1;
+            }
+            else
+            {
+                if (difference > 3)
+                    return 1;
+            }            
+            
+            return 0;
+        }
+
         public Score BuildScore(string filePath)
         {
             Score score = new Score();
@@ -21,9 +70,9 @@ namespace DPA_Musicsheets.ScoreBuilders
             string fileText = File.ReadAllText(filePath);
             string[] tokens = fileText.Split(new string[] { " ", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
 
-            // Default relative note is c.
-            string  relativeNote = "c";
-            int     defaultOctave = 5;
+            // Default relative step is c.
+            string  relativeStep = "c";
+            int     relativeOctave = DEFAULT_RELATIVE_OCTAVE;
 
             for (int i = 0; i < tokens.Length; i++)
             {
@@ -35,8 +84,10 @@ namespace DPA_Musicsheets.ScoreBuilders
                     switch (key)
                     {
                         case "relative":
-                            string relativeNoteValue = tokens[++i];
-                            relativeNote = relativeNoteValue;
+                            string newRelative = tokens[++i];
+                            relativeStep = Regex.Match(newRelative, "[a-z]+").Value;
+                            relativeOctave = DEFAULT_RELATIVE_OCTAVE + (1 * newRelative.Count(x => x == '\''));
+                            relativeOctave -= (1 * newRelative.Count(x => x == ','));
                             break;
                         case "clef":
                             string cleffValue = tokens[++i];
@@ -82,14 +133,14 @@ namespace DPA_Musicsheets.ScoreBuilders
                     // If it's not any of the previous we've found a note. Lets parse it.
 
                     // Get the note type (g, fis etc...)
-                    string noteType = Regex.Match(token, "[a-z]+").Value;
+                    string step = Regex.Match(token, "[a-z]+").Value;
 
                     // Get the note duration.
                     int noteDuration = Int32.Parse(Regex.Match(token, "[0-9]+").Value);
                     StaffSymbolDuration duration = StaffSymbolFactory.Instance.GetStaffSymbolDuration(noteDuration);
 
                     // Check if it is a rest.
-                    if (noteType == "r")
+                    if (step == "r")
                     {
                         Rest rest = new Rest();
                         rest.Duration = duration;
@@ -97,15 +148,19 @@ namespace DPA_Musicsheets.ScoreBuilders
                     }
                     else
                     {
+                        string stepString = NOTE_CONVERSION_TABLE[step];
+
                         // Get the octave.
-                        int octave = defaultOctave;
+                        int octave = relativeOctave + OctaveOffset(relativeStep[0], step[0]);
                         octave += (1 * token.Count(x => x == '\''));
                         octave -= (1 * token.Count(x => x == ','));
+                        relativeStep = step;
+                        relativeOctave = octave;
 
                         Note note = new Note();
                         note.Duration = duration;
                         note.Octave = octave;
-                        note.StepString = StaffSymbolFactory.Instance.lilyPondNoteDictionary[noteType];
+                        note.StepString = stepString;
                         note.NumberOfDots = token.Count(x => x == '.');
 
                         staff.Symbols.Add(note);
