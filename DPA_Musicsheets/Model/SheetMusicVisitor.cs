@@ -19,6 +19,8 @@ namespace DPA_Musicsheets.Model
         private TimeSignature currentTimeSignature;
 
         private double amountEights; // 15 eights = approximately 1 staff
+        private double maxAmountOfEights;
+
         private NoteStemDirection noteStemDirection;
         private int amountNoteBeams;
         private bool continueNoteBeam;
@@ -35,6 +37,7 @@ namespace DPA_Musicsheets.Model
             this.width = width;
             
             amountEights = 0;
+            maxAmountOfEights = 45; //config, no more than 45 on a bar
 
             currentClef = new Clef();
             currentClef.Type = ClefType.G; // default
@@ -61,7 +64,7 @@ namespace DPA_Musicsheets.Model
 
         public void CheckIfNewStaffNeeded()
         {
-            if (amountEights >= 45)
+            if (amountEights >= maxAmountOfEights)
             {
                 CreateNewStaff();
                 amountEights = 0;
@@ -112,8 +115,6 @@ namespace DPA_Musicsheets.Model
 
         public void Visit(Note note, int index)
         {
-            //NoteTieType noteTieType = NoteTieType.None;
-            NoteBeamType noteBeamType = GetNoteBeamType(note, index);
             bool chord = false; // IsChord
 
             if (!continueNoteBeam) // TODO doesn't look very pretty
@@ -128,6 +129,8 @@ namespace DPA_Musicsheets.Model
                 }
             }
 
+            //NoteTieType noteTieType = NoteTieType.None;
+            NoteBeamType noteBeamType = GetNoteBeamType(note, index);
             
             incipitViewer.AddMusicalSymbol(new PSAMControlLibrary.Note(
                                             note.StepString, 
@@ -190,7 +193,8 @@ namespace DPA_Musicsheets.Model
                             amountNoteBeams = 1;
                             continueNoteBeam = false;
                         }
-                        else if (nextNote.Duration == currentNote.Duration)
+                        else if (currentNote.Duration == StaffSymbolDuration.EIGTH && nextNote.Duration == StaffSymbolDuration.EIGTH &&
+                            amountEights + GetDuration(currentNote.Duration, currentNote.NumberOfDots) + GetDuration(nextNote.Duration, nextNote.NumberOfDots) < maxAmountOfEights)
                         {
                             noteBeamType = NoteBeamType.Continue;
                             amountNoteBeams++;
@@ -204,7 +208,7 @@ namespace DPA_Musicsheets.Model
                     }
                     else
                     {
-                        if (nextNote.Duration == currentNote.Duration &&
+                        if (currentNote.Duration == StaffSymbolDuration.EIGTH && nextNote.Duration == StaffSymbolDuration.EIGTH &&
                             StaffSymbolFactory.Instance.GetIntDuration(currentNote.Duration) > 4) // everything with a shorter duration than quarter notes uses beams, quarter and higher don't
                         {
                             noteBeamType = NoteBeamType.Start;
