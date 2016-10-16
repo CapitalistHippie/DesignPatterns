@@ -295,7 +295,7 @@ namespace DPA_Musicsheets
 
         private void OnKeyDown(object sender, KeyEventArgs e)
         {
-            Editor.CommandBase command = Editor.CommandFactory.GetInstance().Construct(e);
+            Editor.CommandBase command = Editor.CommandFactory.GetInstance().Construct(editorReceiver, e);
             if (command != null)
                 editorInvoker.Invoke(command);
         }
@@ -339,17 +339,17 @@ namespace DPA_Musicsheets
 
         private void OnEditorTextBoxTextChanged(object sender, TextChangedEventArgs e)
         {
-            if (textChangedTimer == null)
-            {
-                textChangedTimer = new DispatcherTimer();
-                textChangedTimer.Interval = TimeSpan.FromSeconds(1.5d); // 1.5 Seconds
-                textChangedTimer.Tick += new EventHandler(OnTimedEvent);
-            }
-            else if (textChangedTimer != null)
-            {
-                textChangedTimer.Stop();
-                textChangedTimer.Start();
-            }
+            //if (textChangedTimer == null)
+            //{
+            //    textChangedTimer = new DispatcherTimer();
+            //    textChangedTimer.Interval = TimeSpan.FromSeconds(1.5d); // 1.5 Seconds
+            //    textChangedTimer.Tick += new EventHandler(OnTimedEvent);
+            //}
+            //else if (textChangedTimer != null)
+            //{
+            //    textChangedTimer.Stop();
+            //    textChangedTimer.Start();
+            //}
         }
 
         private void OnTimedEvent(object source, EventArgs e)
