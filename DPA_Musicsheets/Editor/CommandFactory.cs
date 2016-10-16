@@ -19,6 +19,7 @@ namespace DPA_Musicsheets.Editor
             shortcutCommandConstructor.AddHandler(new SaveAsPdfShortcutCommandConstructor());
             shortcutCommandConstructor.AddHandler(new SaveAsLilyPondShortcutCommandConstructor());
             shortcutCommandConstructor.AddHandler(new OpenFileShortcutCommandConstructor());
+            shortcutCommandConstructor.AddHandler(new InsertTrebleClefShortcutCommandConstructor());
         }
 
         public static CommandFactory GetInstance()
