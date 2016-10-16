@@ -9,7 +9,7 @@ namespace DPA_Musicsheets.Savepoints
 {
     public class SavepointKeeper
     {
-        private Savepoint currentSavepoint;
+        public Savepoint currentSavepoint { get; private set; }
 
         public SavepointKeeper()
         {

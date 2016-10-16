@@ -357,6 +357,8 @@ namespace DPA_Musicsheets
             textChangedTimer.Stop();
             if (editorTextBox.Text != null)
             {
+                // save point setten -> savepointkeeper
+
                 currentScore = scoreBuilder.BuildScoreFromString(editorTextBox.Text); // temp
                 FillScoreViewer(currentScore);
             }
