@@ -1,5 +1,8 @@
 ﻿using DPA_Musicsheets.MidiEventHandlers;
 using DPA_Musicsheets.Model;
+using DPA_Musicsheets.ScoreBuilders.LilyHandlers;
+using DPA_Musicsheets.ScoreBuilders.LilyHandlers.LilyNonTokenHandlers;
+using DPA_Musicsheets.ScoreBuilders.LilyTokenHandlers;
 using Sanford.Multimedia.Midi;
 using System;
 using System.Collections.Generic;
@@ -14,48 +17,7 @@ namespace DPA_Musicsheets.ScoreBuilders
     public class LilyPondScoreBuilder : IScoreBuilder
     {
         private static readonly int                         DEFAULT_RELATIVE_OCTAVE = 4;
-        private static readonly Dictionary<string, string>  NOTE_CONVERSION_TABLE   = new Dictionary<string, string>
-        {
-            { "c",   "C" },
-            { "cis", "C#" },
-            { "d",   "D" },
-            { "dis", "D#" },
-            { "e",   "E" },
-            { "f",   "F" },
-            { "fis", "F#" },
-            { "g",   "G" },
-            { "gis", "G#" },
-            { "a",   "A" },
-            { "as",  "A#" },
-            { "b",   "B" },
-        };
-
-        private static readonly Dictionary<char, int> NOTE_NUMBER_CONVERSION_TABLE = new Dictionary<char, int>
-        {
-            { 'c', 1 },
-            { 'd', 2 },
-            { 'e', 3 },
-            { 'f', 4 },
-            { 'g', 5 },
-            { 'a', 6 },
-            { 'b', 7 },
-        };
-
-        private int OctaveOffset(char relativeStep, char step)
-        {
-            // ASCII to number
-            int relativeStepNumber = NOTE_NUMBER_CONVERSION_TABLE[relativeStep];
-            int stepNumber = NOTE_NUMBER_CONVERSION_TABLE[step];
-
-            int difference = relativeStepNumber - stepNumber;
-
-            if (difference < -3)
-                return -1;
-            if (difference > 3)
-                return 1;
-            return 0;
-        }
-
+        
         public Score BuildScoreFromString(string text)
         {
             return BuildScore(text);
@@ -78,98 +40,66 @@ namespace DPA_Musicsheets.ScoreBuilders
             string relativeStep = "c";
             int relativeOctave = DEFAULT_RELATIVE_OCTAVE;
 
+            Dictionary<string, ILilyTokenHandler> lilyTokenHandlers = new Dictionary<string, ILilyTokenHandler>
+            {
+                { "relative",   new RelativeTokenHandler()      },
+                { "clef"    ,   new ClefTokenHandler()          },
+                { "time"    ,   new TimeTokenHandler()          },
+                { "tempo"   ,   new TempoTokenHandler()         },
+                { "repeat"  ,   new RepeatTokenHandler()        },
+            };
+
+            Dictionary<string, ILilyNonTokenHandler> lilyNonTokenHandlers = new Dictionary<string, ILilyNonTokenHandler>
+            {
+                { "|",          new BarlineHandler()            },
+                { "{",          new NonTokenHandler()           },
+                { "}",          new NonTokenHandler()           },
+                { "note",       new NoteHandler()               },
+            };
+
             for (int i = 0; i < tokens.Length; i++)
             {
                 string token = tokens[i];
+                RelativeVariablesWrapper wrapper;
 
-                if (token.StartsWith("\\"))
+                if (token.StartsWith("\\")) // tokens
                 {
                     string key = token.Substring(1);
-                    switch (key)
-                    {
-                        case "relative":
-                            string newRelative = tokens[++i];
-                            relativeStep = Regex.Match(newRelative, "[a-z]+").Value;
-                            relativeOctave = DEFAULT_RELATIVE_OCTAVE + (1 * newRelative.Count(x => x == '\''));
-                            relativeOctave -= (1 * newRelative.Count(x => x == ','));
-                            break;
-                        case "clef":
-                            string cleffValue = tokens[++i];
-                            staff.AddClef(cleffValue);
-                            break;
-                        case "time":
-                            string timeValue = tokens[++i];
-                            staff.AddTimeSignature(timeValue);
-                            break;
-                        case "tempo":
-                            string tempoValue = tokens[++i];
-                            staff.AddTempo(tempoValue);
-                            break;
-                        case "repeat":
-                            string repeatType = tokens[++i];
-                            switch (repeatType)
-                            {
-                                case "volta":
-                                    int repeatCount = int.Parse(tokens[++i]);
-                                    //staff.Symbols.Add(new Repeat { Type = RepeatType.FORWARD });
-                                    break;
-                            }
-                            break;
-                        case "alternative":
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                else
-                {
-                    switch (token)
-                    {
-                        case "|":
-                            staff.Symbols.Add(new Barline());
-                            continue;
-                        case "{":
-                            continue;
-                        case "}":
-                            continue;
-                    }
 
-                    // If it's not any of the previous we've found -> it's a note. Lets parse it.
-
-                    // TODO! : Catch not valid notes/tokens -> Return null Score. Do not save this score as a Savepoint/Memento/State
-
-                    // Get the note type (g, fis etc...)
-                    string step = Regex.Match(token, "[a-z]+").Value;
-
-                    // Get the note duration.
-                    int noteDuration = Int32.Parse(Regex.Match(token, "[0-9]+").Value);
-                    StaffSymbolDuration duration = StaffSymbolFactory.Instance.GetStaffSymbolDuration(noteDuration);
-
-                    // Check if it is a rest.
-                    if (step == "r")
-                    {
-                        Rest rest = new Rest();
-                        rest.Duration = duration;
-                        staff.Symbols.Add(rest);
+                    if (lilyTokenHandlers.ContainsKey(key)) {
+                        wrapper = lilyTokenHandlers[key].Handle(token, tokens, staff, ref i);
+                        if (wrapper != null)
+                        {
+                            relativeStep = wrapper.relativeStep;
+                            relativeOctave = wrapper.relativeOctave;
+                        }
                     }
                     else
                     {
-                        string stepString = NOTE_CONVERSION_TABLE[step];
+                        return null; // Invalid token -> error
+                    }
+                }
+                else // Remaining nonTokens
+                {
+                    if (lilyNonTokenHandlers.ContainsKey(token)) { // at this point the token isn't a token anymore tho
+                        lilyNonTokenHandlers[token].Handle(token, staff, null);
+                    }
+                    else // -> it's not any of the previous we've found -> it's a Note (non)Token. Lets parse it.
+                    {
+                        wrapper = new RelativeVariablesWrapper();
+                        wrapper.relativeStep = relativeStep;
+                        wrapper.relativeOctave = relativeOctave;
 
-                        // Get the octave.
-                        int octave = relativeOctave + OctaveOffset(relativeStep[0], step[0]);
-                        octave += (1 * token.Count(x => x == '\''));
-                        octave -= (1 * token.Count(x => x == ','));
-                        relativeStep = step;
-                        relativeOctave = octave;
-
-                        Note note = new Note();
-                        note.Duration = duration;
-                        note.Octave = octave;
-                        note.StepString = stepString;
-                        note.NumberOfDots = token.Count(x => x == '.');
-
-                        staff.Symbols.Add(note);
+                        wrapper = lilyNonTokenHandlers["note"].Handle(token, staff, wrapper);
+                        if (wrapper != null)
+                        {
+                            relativeStep = wrapper.relativeStep;
+                            relativeOctave = wrapper.relativeOctave;
+                        }
+                        else
+                        {
+                            return null; // Invalid note -> error
+                        }
                     }
                 }
             }

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace DPA_Musicsheets.MidiEventHandlers
 {
+    // Rests & Notes
     public class ChannelEventHandler : IEventHandler, IScoreObserver, IStaffObserver
     {
         private Score score;

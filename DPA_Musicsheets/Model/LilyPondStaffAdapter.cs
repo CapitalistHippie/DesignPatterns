@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DPA_Musicsheets.Model
 {
-    class LilyPondStaffAdapter : Staff
+    public class LilyPondStaffAdapter : Staff
     {
         private static readonly Dictionary<ClefType, string> lilyPondClefToClef = new Dictionary<ClefType, string>
         {
