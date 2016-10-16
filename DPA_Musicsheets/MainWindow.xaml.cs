@@ -32,23 +32,26 @@ namespace DPA_Musicsheets
         // De OutputDevice is een midi device of het midikanaal van je PC.
         // Hierop gaan we audio streamen.
         // DeviceID 0 is je audio van je PC zelf.
-        private OutputDevice                    outputDevice    = new OutputDevice(0);
+        private OutputDevice                    outputDevice            = new OutputDevice(0);
         private MidiPlayer                      player;
-        private DispatcherTimer                 textChangedTimer;
 
-        private IScoreBuilder                   scoreBuilder    = new ScoreBuilder();
-        private Model.Score                     currentScore;
+        private IScoreBuilder                   scoreBuilder            = new ScoreBuilder();
+        private IScoreBuilder                   lilyPondScoreBuilder    = new LilyPondScoreBuilder();
+
+        private Model.Score                     currentScore            = null;
 
         // Editor command pattern stuff
-        Editor.Receiver                          editorReceiver;
-        Editor.Invoker                           editorInvoker;
+        Editor.Receiver                         editorReceiver;
+        Editor.Invoker                          editorInvoker;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            editorReceiver = new Editor.Receiver();
+            editorReceiver = new Editor.Receiver(editorTabControl);
             editorInvoker = new Editor.Invoker(editorReceiver);
+
+            editorReceiver.AddTextChangedEvent(OnEditorTextChanged);
         }
 
         private void FillScoreViewer(Model.Score score)
@@ -98,70 +101,34 @@ namespace DPA_Musicsheets
 
         private void OnOpenButtonClick(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog() { Filter = "All files (*.*)|*.*|Midi Files (*.mid)|*.mid|LilyPond Files (*.ly)|*.ly" };
-            if (openFileDialog.ShowDialog() == true)
-            {
-                // Show the file path in the text box.
-                filePathTextBox.Text = openFileDialog.FileName;
-                Model.Score score = scoreBuilder.BuildScoreFromFile(filePathTextBox.Text);
+            editorReceiver.Clear();
 
-                if (score == null)
+            Editor.OpenFileCommand command = new Editor.OpenFileCommand(editorReceiver);
+
+            editorInvoker.Invoke(command);
+
+            // If nothing was opened it was not a lilypond file. In that case, throw it through the builder.
+            if (editorReceiver.GetFilePath() == null || editorReceiver.GetFilePath() == "")
+            {
+                filePathTextBox.Text = command.selectedFilePath;
+
+                currentScore = scoreBuilder.BuildScoreFromFile(filePathTextBox.Text);
+
+                // If still nothing it was an invalid/unsupported file/file type.
+                if (currentScore == null)
                 {
-                    MessageBox.Show("Unsupported file type.");
+                    MessageBox.Show("Invalid or unsupported file/file type.");
                     return;
                 }
-
-                string fileExtension = System.IO.Path.GetExtension(filePathTextBox.Text);
-
-                if (fileExtension == ".ly")
-                {
-                    string fileText = File.ReadAllText(filePathTextBox.Text);
-
-                    // Clear the bookmarks.
-                    editorTabControl.Items.Clear();
-
-                    // Create the initial bookmark tab.
-                    ChangeActiveEditorBookmark(AddEditorBookmark(fileText));
-                }
-
-                FillScoreViewer(score);
-                currentScore = score;
             }
-        }
+            else
+            {
+                filePathTextBox.Text = editorReceiver.GetFilePath();
 
-        private int AddEditorBookmark(string content)
-        {
-            TabItem tabItem = new TabItem();
-            tabItem.Header = DateTime.Now.ToString("HH:mm:ss");
-            TextBox textBox = new TextBox();
-            tabItem.Content = textBox;
-            textBox.Text = content;
-            textBox.AcceptsReturn = true;
-            textBox.AcceptsTab = true;
-            textBox.VerticalScrollBarVisibility = ScrollBarVisibility.Visible;
+                currentScore = lilyPondScoreBuilder.BuildScoreFromString(editorReceiver.GetContent());
+            }
 
-            return editorTabControl.Items.Add(tabItem);
-        }
-
-        private TextBox GetActiveEditorBookmark()
-        {
-            TabItem tabItem = editorTabControl.SelectedItem as TabItem;
-            if (tabItem == null)
-                return null;
-            return tabItem.Content as TextBox;
-        }
-
-        private void ChangeActiveEditorBookmark(int index)
-        {
-            TextBox textBox = GetActiveEditorBookmark();
-            if (textBox != null)
-                textBox.TextChanged -= OnEditorTextBoxTextChanged;
-
-            editorTabControl.SelectedIndex = index;
-
-            textBox = GetActiveEditorBookmark();
-            textBox.TextChanged += OnEditorTextBoxTextChanged;
-            editorReceiver.SetTextBox(textBox);
+            FillScoreViewer(currentScore);
         }
 
         private void OnWindowClosing(object sender, CancelEventArgs e)
@@ -176,9 +143,7 @@ namespace DPA_Musicsheets
         private void OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             if (currentScore != null)
-            {
-                FillScoreViewer(currentScore); // so dirteh :')
-            }
+                FillScoreViewer(currentScore);
         }
 
         private void OnKeyDown(object sender, KeyEventArgs e)
@@ -225,49 +190,17 @@ namespace DPA_Musicsheets
 
         }
 
-        private void OnEditorTextBoxTextChanged(object sender, TextChangedEventArgs e)
+        private void OnEditorTextChanged()
         {
-            if (textChangedTimer == null)
+            try
             {
-                textChangedTimer = new DispatcherTimer();
-                textChangedTimer.Interval = TimeSpan.FromSeconds(1.5d); // 1.5 Seconds
-                textChangedTimer.Tick += new EventHandler(OnTimedEvent);
-            }
-            else if (textChangedTimer != null)
-            {
-                textChangedTimer.Stop();
-                textChangedTimer.Start();
-            }
-        }
-
-        private void OnTimedEvent(object source, EventArgs e)
-        {
-            textChangedTimer.Stop();
-            if (GetActiveEditorBookmark().Text != null)
-            {
-                currentScore = scoreBuilder.BuildScoreFromString(GetActiveEditorBookmark().Text); // temp
+                currentScore = lilyPondScoreBuilder.BuildScoreFromString(editorReceiver.GetContent());
                 FillScoreViewer(currentScore);
-
-                ChangeActiveEditorBookmark(AddEditorBookmark(GetActiveEditorBookmark().Text));
             }
-        }
-
-        private void OnEditorTabControlSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            TabControl tabControl = sender as TabControl;
-
-            if (e.RemovedItems.Count != 0)
+            catch (Exception e)
             {
-                TextBox removedTextBox = (e.RemovedItems[0] as TabItem).Content as TextBox;
-                removedTextBox.TextChanged -= OnEditorTextBoxTextChanged;
+
             }
-
-            TextBox textBox = GetActiveEditorBookmark();
-            textBox.TextChanged += OnEditorTextBoxTextChanged;
-            editorReceiver.SetTextBox(textBox);
-
-            currentScore = scoreBuilder.BuildScoreFromString(GetActiveEditorBookmark().Text); // temp
-            FillScoreViewer(currentScore);
         }
     }
 }

@@ -25,6 +25,7 @@ namespace DPA_Musicsheets.Editor
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Filter = "PDF Files (*.pdf)|*.pdf";
+            saveFileDialog.FileName = Path.GetFileNameWithoutExtension(receiver.GetFilePath());
 
             if (saveFileDialog.ShowDialog() == true)
             {
