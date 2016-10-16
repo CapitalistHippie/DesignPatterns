@@ -19,14 +19,21 @@ namespace DPA_Musicsheets.ScoreBuilders
             { ".ly",    new LilyPondScoreBuilder() }
         };
 
-        public Score BuildScore(string filePath)
+        public Score BuildScoreFromFile(string filePath)
         {
             string fileExtension = Path.GetExtension(filePath);
 
             if (!scoreBuilders.ContainsKey(fileExtension))
                 return null;
 
-            return scoreBuilders[fileExtension].BuildScore(filePath);
+            return scoreBuilders[fileExtension].BuildScoreFromFile(filePath);
+        }
+
+        public Score BuildScoreFromString(string lilyPondText)
+        {
+            return scoreBuilders[".ly"].BuildScoreFromString(lilyPondText);
+
+            //throw new NotImplementedException();
         }
     }
 }

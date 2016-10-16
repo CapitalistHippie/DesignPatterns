@@ -56,17 +56,27 @@ namespace DPA_Musicsheets.ScoreBuilders
             return 0;
         }
 
-        public Score BuildScore(string filePath)
+        public Score BuildScoreFromString(string lilyPondText)
+        {
+            return BuildScore(lilyPondText);
+        }
+
+        public Score BuildScoreFromFile(string filePath)
+        {
+            string fileText = File.ReadAllText(filePath);
+            return BuildScore(fileText);
+        }
+
+        private Score BuildScore(string lilyPondText)
         {
             Score score = new Score();
             LilyPondStaffAdapter staff = new LilyPondStaffAdapter();
 
-            string fileText = File.ReadAllText(filePath);
-            string[] tokens = fileText.Split(new string[] { " ", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+            string[] tokens = lilyPondText.Split(new string[] { " ", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
 
             // Default relative step is c.
-            string  relativeStep = "c";
-            int     relativeOctave = DEFAULT_RELATIVE_OCTAVE;
+            string relativeStep = "c";
+            int relativeOctave = DEFAULT_RELATIVE_OCTAVE;
 
             for (int i = 0; i < tokens.Length; i++)
             {

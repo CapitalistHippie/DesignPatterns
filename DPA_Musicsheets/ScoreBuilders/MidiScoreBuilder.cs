@@ -80,7 +80,7 @@ namespace DPA_Musicsheets.ScoreBuilders
                 controlTrack.RemoveAt(eventIndex - offset++);
         }
 
-        public Score BuildScore(string filePath)
+        public Score BuildScoreFromFile(string filePath)
         {
             Score score = new Score();
 
@@ -125,6 +125,11 @@ namespace DPA_Musicsheets.ScoreBuilders
             }
 
             return score;
+        }
+
+        public Score BuildScoreFromString(string lilyPondText)
+        {
+            throw new NotImplementedException(); // Not supposed to get at this point, ever. The midibuilder is, ofcourse not supposed to implement nor read lilyPondText, duh.
         }
     }
 }

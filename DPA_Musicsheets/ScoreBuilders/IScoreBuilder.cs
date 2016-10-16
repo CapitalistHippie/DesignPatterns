@@ -9,6 +9,7 @@ namespace DPA_Musicsheets.ScoreBuilders
 {
     public interface IScoreBuilder
     {
-        Score BuildScore(string filePath);
+        Score BuildScoreFromFile(string filePath);
+        Score BuildScoreFromString(string editorText);
     }
 }

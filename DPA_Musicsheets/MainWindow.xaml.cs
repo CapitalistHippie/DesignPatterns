@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -20,6 +21,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace DPA_Musicsheets
 {
@@ -34,6 +36,7 @@ namespace DPA_Musicsheets
         private OutputDevice                    outputDevice = new OutputDevice(0);
         private MidiPlayer                      player;
         public ObservableCollection<MidiTrack>  MidiTracks { get; private set; }
+        private DispatcherTimer                 textChangedTimer;
 
         private IScoreBuilder                   scoreBuilder = new ScoreBuilder();
         private Model.Score                     currentScore;
@@ -232,12 +235,20 @@ namespace DPA_Musicsheets
             {
                 // Show the file path in the text box.
                 FilePathTextBox.Text = openFileDialog.FileName;
-                Model.Score score = scoreBuilder.BuildScore(FilePathTextBox.Text);
+                Model.Score score = scoreBuilder.BuildScoreFromFile(FilePathTextBox.Text);
 
                 if (score == null)
                 {
                     MessageBox.Show("Unsupported file type.");
                     return;
+                }
+
+                string fileExtension = System.IO.Path.GetExtension(FilePathTextBox.Text);
+
+                if (fileExtension == ".ly")
+                {
+                    string fileText = File.ReadAllText(FilePathTextBox.Text);
+                    Editor.Text = fileText;
                 }
 
                 FillScoreViewer(score);
@@ -311,6 +322,30 @@ namespace DPA_Musicsheets
         private void OnEditorSaveAsButtonClick(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        private void OnTextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (textChangedTimer == null)
+            {
+                textChangedTimer = new DispatcherTimer();
+                textChangedTimer.Interval = TimeSpan.FromSeconds(1.5d); // 1.5 Seconds
+                textChangedTimer.Tick += new EventHandler(OnTimedEvent);
+            }
+            else if(textChangedTimer != null) {
+                textChangedTimer.Stop();
+                textChangedTimer.Start();
+            }
+        }
+
+        private void OnTimedEvent(object source, EventArgs e)
+        {
+            textChangedTimer.Stop();
+            if (Editor.Text != null)
+            {
+                currentScore = scoreBuilder.BuildScoreFromString(Editor.Text); // temp
+                FillScoreViewer(currentScore);
+            }
         }
     }
 }

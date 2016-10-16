@@ -86,7 +86,7 @@
                     <Button Content="Save as" Grid.Column="3" Margin="10,0,0,0" Click="OnEditorSaveAsButtonClick" Height="23"/>
                 </Grid>
 
-                <TextBox Grid.Row="1" Margin="0,10,0,0">
+                <TextBox x:Name="Editor"  Grid.Row="1" Margin="0,10,0,0" TextChanged="OnTextChanged">
                 </TextBox>
             </Grid>
         </Grid>
