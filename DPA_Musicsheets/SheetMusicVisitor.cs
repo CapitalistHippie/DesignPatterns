@@ -25,9 +25,24 @@ namespace DPA_Musicsheets.Model
         private int amountNoteBeams;
         private bool continueNoteBeam;
 
-        private Dictionary<ClefType, PSAMControlLibrary.ClefType> psamClefTypeConversionDictionary;
-        private Dictionary<StaffSymbolDuration, double> eightsConversionDurationDictionary;
-        
+        private static Dictionary<ClefType, PSAMControlLibrary.ClefType> psamClefTypeConversionDictionary = new Dictionary<ClefType, PSAMControlLibrary.ClefType>
+        {
+            { ClefType.C, PSAMControlLibrary.ClefType.CClef },
+            { ClefType.F, PSAMControlLibrary.ClefType.FClef },
+            { ClefType.G, PSAMControlLibrary.ClefType.GClef },
+        };
+
+        private static Dictionary<StaffSymbolDuration, double> eightsConversionDurationDictionary = new Dictionary<StaffSymbolDuration, double>
+        {
+            { StaffSymbolDuration.EIGTH, 1 },
+            { StaffSymbolDuration.QUARTER, 1.25 },
+            { StaffSymbolDuration.HALF, 2 },
+            { StaffSymbolDuration.WHOLE, 4 },
+            { StaffSymbolDuration.SIXTEENTH, 1 },
+            { StaffSymbolDuration.THIRTY_SECOND, 1 },
+            { StaffSymbolDuration.SIXTY_FOURTH, 1 },
+            { StaffSymbolDuration.HUNDRED_TWENTY_EIGHTH, 1 },
+        };        
 
         public ScoreVisitor(Staff staff, IncipitViewerWPF incipitViewer, StackPanel scoreStackPanel, double width)
         {
@@ -40,26 +55,7 @@ namespace DPA_Musicsheets.Model
             maxAmountOfEights = (45d / 683 * 45d) * (width / 45d); //config, no more than 45 on a bar
 
             currentClef = new Clef();
-            currentClef.Type = ClefType.G; // default
-
-            psamClefTypeConversionDictionary = new Dictionary<ClefType, PSAMControlLibrary.ClefType> {
-                { ClefType.C, PSAMControlLibrary.ClefType.CClef},
-                { ClefType.F, PSAMControlLibrary.ClefType.FClef},
-                { ClefType.G, PSAMControlLibrary.ClefType.GClef},
-            };
-
-            eightsConversionDurationDictionary = new Dictionary<StaffSymbolDuration, double> {
-                { StaffSymbolDuration.EIGTH, 1 },
-                { StaffSymbolDuration.QUARTER, 1.25 },
-                { StaffSymbolDuration.HALF, 2 },
-                { StaffSymbolDuration.WHOLE, 4 },
-                { StaffSymbolDuration.SIXTEENTH, 1 },
-                { StaffSymbolDuration.THIRTY_SECOND, 1 },
-                { StaffSymbolDuration.SIXTY_FOURTH, 1 },
-                { StaffSymbolDuration.HUNDRED_TWENTY_EIGHTH, 1 },
-            };
-
-            
+            currentClef.Type = ClefType.G; // default            
         }
 
         public void CheckIfNewStaffNeeded()

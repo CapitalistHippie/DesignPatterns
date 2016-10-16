@@ -47,7 +47,7 @@ namespace DPA_Musicsheets
         {
             InitializeComponent();
 
-            editorReceiver = new Editor.Receiver(editorTextBox);
+            editorReceiver = new Editor.Receiver();
             editorInvoker = new Editor.Invoker(editorReceiver);
         }
 
@@ -116,12 +116,52 @@ namespace DPA_Musicsheets
                 if (fileExtension == ".ly")
                 {
                     string fileText = File.ReadAllText(filePathTextBox.Text);
-                    editorTextBox.Text = fileText;
+
+                    // Clear the bookmarks.
+                    editorTabControl.Items.Clear();
+
+                    // Create the initial bookmark tab.
+                    ChangeActiveEditorBookmark(AddEditorBookmark(fileText));
                 }
 
                 FillScoreViewer(score);
                 currentScore = score;
             }
+        }
+
+        private int AddEditorBookmark(string content)
+        {
+            TabItem tabItem = new TabItem();
+            tabItem.Header = DateTime.Now.ToString("HH:mm:ss");
+            TextBox textBox = new TextBox();
+            tabItem.Content = textBox;
+            textBox.Text = content;
+            textBox.AcceptsReturn = true;
+            textBox.AcceptsTab = true;
+            textBox.VerticalScrollBarVisibility = ScrollBarVisibility.Visible;
+
+            return editorTabControl.Items.Add(tabItem);
+        }
+
+        private TextBox GetActiveEditorBookmark()
+        {
+            TabItem tabItem = editorTabControl.SelectedItem as TabItem;
+            if (tabItem == null)
+                return null;
+            return tabItem.Content as TextBox;
+        }
+
+        private void ChangeActiveEditorBookmark(int index)
+        {
+            TextBox textBox = GetActiveEditorBookmark();
+            if (textBox != null)
+                textBox.TextChanged -= OnEditorTextBoxTextChanged;
+
+            editorTabControl.SelectedIndex = index;
+
+            textBox = GetActiveEditorBookmark();
+            textBox.TextChanged += OnEditorTextBoxTextChanged;
+            editorReceiver.SetTextBox(textBox);
         }
 
         private void OnWindowClosing(object sender, CancelEventArgs e)
@@ -203,11 +243,31 @@ namespace DPA_Musicsheets
         private void OnTimedEvent(object source, EventArgs e)
         {
             textChangedTimer.Stop();
-            if (editorTextBox.Text != null)
+            if (GetActiveEditorBookmark().Text != null)
             {
-                currentScore = scoreBuilder.BuildScoreFromString(editorTextBox.Text); // temp
+                currentScore = scoreBuilder.BuildScoreFromString(GetActiveEditorBookmark().Text); // temp
                 FillScoreViewer(currentScore);
+
+                ChangeActiveEditorBookmark(AddEditorBookmark(GetActiveEditorBookmark().Text));
             }
+        }
+
+        private void OnEditorTabControlSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            TabControl tabControl = sender as TabControl;
+
+            if (e.RemovedItems.Count != 0)
+            {
+                TextBox removedTextBox = (e.RemovedItems[0] as TabItem).Content as TextBox;
+                removedTextBox.TextChanged -= OnEditorTextBoxTextChanged;
+            }
+
+            TextBox textBox = GetActiveEditorBookmark();
+            textBox.TextChanged += OnEditorTextBoxTextChanged;
+            editorReceiver.SetTextBox(textBox);
+
+            currentScore = scoreBuilder.BuildScoreFromString(GetActiveEditorBookmark().Text); // temp
+            FillScoreViewer(currentScore);
         }
     }
 }

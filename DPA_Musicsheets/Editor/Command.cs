@@ -22,26 +22,31 @@ namespace DPA_Musicsheets.Editor
 
     public class Receiver
     {
-        private TextBox editor;
+        private TextBox textBox;
 
-        public Receiver(TextBox editor)
+        public Receiver(TextBox textBox = null)
         {
-            this.editor = editor;
+            this.textBox = textBox;
+        }
+
+        public void SetTextBox(TextBox textBox)
+        {
+            this.textBox = textBox;
         }
 
         public void Undo()
         {
-            editor.Undo();
+            textBox.Undo();
         }
 
         public void Redo()
         {
-            editor.Redo();
+            textBox.Redo();
         }
 
         public void WriteAtCaret(string text)
         {
-            editor.Text.Insert(editor.CaretIndex, text);
+            textBox.Text.Insert(textBox.CaretIndex, text);
         }
     }
 
