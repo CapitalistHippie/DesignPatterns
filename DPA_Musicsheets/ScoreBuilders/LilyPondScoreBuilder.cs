@@ -56,9 +56,9 @@ namespace DPA_Musicsheets.ScoreBuilders
             return 0;
         }
 
-        public Score BuildScoreFromString(string lilyPondText)
+        public Score BuildScoreFromString(string text)
         {
-            return BuildScore(lilyPondText);
+            return BuildScore(text);
         }
 
         public Score BuildScoreFromFile(string filePath)
@@ -67,12 +67,12 @@ namespace DPA_Musicsheets.ScoreBuilders
             return BuildScore(fileText);
         }
 
-        private Score BuildScore(string lilyPondText)
+        private Score BuildScore(string text)
         {
             Score score = new Score();
             LilyPondStaffAdapter staff = new LilyPondStaffAdapter();
 
-            string[] tokens = lilyPondText.Split(new string[] { " ", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+            string[] tokens = text.Split(new string[] { " ", "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
 
             // Default relative step is c.
             string relativeStep = "c";
