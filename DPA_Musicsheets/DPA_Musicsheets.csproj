@@ -71,6 +71,8 @@
     <Compile Include="AdvancedTabControl.cs" />
     <Compile Include="Editor\Command.cs" />
     <Compile Include="Editor\CommandFactory.cs" />
+    <Compile Include="Editor\SaveAsPdfCommand.cs" />
+    <Compile Include="Editor\SaveAsLilyPondCommand.cs" />
     <Compile Include="Editor\RedoCommand.cs" />
     <Compile Include="Editor\UndoCommand.cs" />
     <Compile Include="ScoreBuilders\MidiEventHandlers\ChannelEventHandler.cs" />

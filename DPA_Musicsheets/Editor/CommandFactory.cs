@@ -14,7 +14,10 @@ namespace DPA_Musicsheets.Editor
 
         private CommandFactory()
         {
-            shortcutCommandConstructor = new RedoShortcutCommandConstructor();
+            shortcutCommandConstructor = new UndoShortcutCommandConstructor();
+            shortcutCommandConstructor.AddHandler(new RedoShortcutCommandConstructor());
+            shortcutCommandConstructor.AddHandler(new SaveAsPdfShortcutCommandConstructor());
+            shortcutCommandConstructor.AddHandler(new SaveAsLilyPondShortcutCommandConstructor());
         }
 
         public static CommandFactory GetInstance()

@@ -98,7 +98,7 @@ namespace DPA_Musicsheets
 
         private void OnOpenButtonClick(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog() { Filter = "Midi Files(.mid)|*.mid|LilyPond Files(.ly)|*.ly" };
+            OpenFileDialog openFileDialog = new OpenFileDialog() { Filter = "All files (*.*)|*.*|Midi Files (*.mid)|*.mid|LilyPond Files (*.ly)|*.ly" };
             if (openFileDialog.ShowDialog() == true)
             {
                 // Show the file path in the text box.

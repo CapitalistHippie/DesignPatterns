@@ -48,6 +48,11 @@ namespace DPA_Musicsheets.Editor
         {
             textBox.Text.Insert(textBox.CaretIndex, text);
         }
+
+        public string GetContent()
+        {
+            return textBox.Text;
+        }
     }
 
     public class Invoker

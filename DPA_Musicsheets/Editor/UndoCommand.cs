@@ -25,7 +25,7 @@ namespace DPA_Musicsheets.Editor
     {
         public override CommandBase Handle(Receiver receiver, KeyEventArgs keyEventArgs)
         {
-            if (Keyboard.Modifiers == ModifierKeys.Control && keyEventArgs.Key == Key.Y)
+            if (Keyboard.Modifiers == ModifierKeys.Control && keyEventArgs.Key == Key.Z)
                 return new UndoCommand(receiver);
             return base.Handle(receiver, keyEventArgs);
         }
