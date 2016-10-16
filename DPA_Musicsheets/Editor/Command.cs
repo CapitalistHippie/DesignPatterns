@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
-using System.Windows.Input;
 
 namespace DPA_Musicsheets.Editor
 {
@@ -58,29 +57,6 @@ namespace DPA_Musicsheets.Editor
         public void Invoke(CommandBase command)
         {
             command.Execute();
-        }
-    }
-
-    public class CommandFactory
-    {
-        private static CommandFactory instance;
-
-        private CommandFactory()
-        {
-        }
-
-        public static CommandFactory GetInstance()
-        {
-            if (instance == null)
-                instance = new CommandFactory();
-            return instance;
-        }
-
-        public CommandBase Construct(KeyEventArgs keyEventArgs)
-        {
-            // See who can handle constructing a command from this keyevent (chain of responsibility).
-            //throw new NotImplementedException();
-            return null;
         }
     }
 }
