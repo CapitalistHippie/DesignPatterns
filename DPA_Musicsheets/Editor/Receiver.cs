@@ -53,7 +53,14 @@ namespace DPA_Musicsheets.Editor
 
             TextBox activeTextBox = GetActiveTabTextBox();
             if (activeTextBox != null)
+            {
+                int index = tabControl.SelectedIndex + 1;
+                for (int i = tabControl.SelectedIndex + 1; i < tabControl.Items.Count; i++)
+                {
+                    tabControl.Items.RemoveAt(index);
+                }
                 ActivateTab(AddTab(activeTextBox.Text));
+            }
         }
 
         private void OnTabControlSelectionChanged(object sender, SelectionChangedEventArgs e)
