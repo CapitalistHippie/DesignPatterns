@@ -11,7 +11,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -33,13 +32,17 @@ namespace DPA_Musicsheets
         // De OutputDevice is een midi device of het midikanaal van je PC.
         // Hierop gaan we audio streamen.
         // DeviceID 0 is je audio van je PC zelf.
-        private OutputDevice                    outputDevice = new OutputDevice(0);
+        private OutputDevice                    outputDevice    = new OutputDevice(0);
         private MidiPlayer                      player;
-        public ObservableCollection<MidiTrack>  MidiTracks { get; private set; }
         private DispatcherTimer                 textChangedTimer;
+        public ObservableCollection<MidiTrack>  MidiTracks { get; private set; }
 
-        private IScoreBuilder                   scoreBuilder = new ScoreBuilder();
+        private IScoreBuilder                   scoreBuilder    = new ScoreBuilder();
         private Model.Score                     currentScore;
+
+        // Editor command pattern stuff
+        Editor.Receiver                          editorReceiver;
+        Editor.Invoker                           editorInvoker;
 
         public MainWindow()
         {
@@ -47,13 +50,16 @@ namespace DPA_Musicsheets
 
             InitializeComponent();
             DataContext = MidiTracks;
+
+            editorReceiver = new Editor.Receiver(editorTextBox);
+            editorInvoker = new Editor.Invoker(editorReceiver);
         }
 
         private void FillScoreViewer(Model.Score score)
         {
-            ContentSheetControl.Items.Clear();
+            sheetTabControl.Items.Clear();
 
-            double width = ContentSheetControl.ActualWidth - 75;
+            double width = sheetTabControl.ActualWidth - 75;
 
             for (int i = 0; i < score.GetAmountOfStaves(); i++)
             {
@@ -85,10 +91,10 @@ namespace DPA_Musicsheets
                 TabItem tab = new TabItem();
                 tab.Header = staff.StaffName;
                 tab.Content = scrollViewer;
-                ContentSheetControl.Items.Add(tab);
+                sheetTabControl.Items.Add(tab);
             }
 
-            ContentSheetControl.Items.Add(ReturnTestTabItem());
+            sheetTabControl.Items.Add(ReturnTestTabItem());
         }
 
         private TabItem ReturnTestTabItem()
@@ -104,7 +110,7 @@ namespace DPA_Musicsheets
             Thickness marginTest = staffTest.Margin;
             marginTest.Top += 50;
             staffTest.Margin = marginTest;
-            staffTest.Width = ContentSheetControl.ActualWidth;
+            staffTest.Width = sheetTabControl.ActualWidth;
 
             scoreStackPanelTest.Children.Add(staffTest);
 
@@ -234,8 +240,8 @@ namespace DPA_Musicsheets
             if (openFileDialog.ShowDialog() == true)
             {
                 // Show the file path in the text box.
-                FilePathTextBox.Text = openFileDialog.FileName;
-                Model.Score score = scoreBuilder.BuildScoreFromFile(FilePathTextBox.Text);
+                filePathTextBox.Text = openFileDialog.FileName;
+                Model.Score score = scoreBuilder.BuildScoreFromFile(filePathTextBox.Text);
 
                 if (score == null)
                 {
@@ -243,37 +249,20 @@ namespace DPA_Musicsheets
                     return;
                 }
 
-                string fileExtension = System.IO.Path.GetExtension(FilePathTextBox.Text);
+                string fileExtension = System.IO.Path.GetExtension(filePathTextBox.Text);
 
                 if (fileExtension == ".ly")
                 {
-                    string fileText = File.ReadAllText(FilePathTextBox.Text);
-                    Editor.Text = fileText;
+                    string fileText = File.ReadAllText(filePathTextBox.Text);
+                    editorTextBox.Text = fileText;
                 }
 
                 FillScoreViewer(score);
                 currentScore = score;
 
                 if (System.IO.Path.GetExtension(openFileDialog.FileName) == ".mid")
-                    ShowMidiTracks(MidiReader.ReadMidi(FilePathTextBox.Text));                
+                    ShowMidiTracks(MidiReader.ReadMidi(filePathTextBox.Text));                
             }
-        }
-
-        private void OnPlayButtonClick(object sender, RoutedEventArgs e)
-        {
-            if (player != null)
-            {
-                player.Dispose();
-            }
-
-            player = new MidiPlayer(outputDevice);
-            player.Play(FilePathTextBox.Text);
-        }
-
-        private void OnStopButtonClick(object sender, RoutedEventArgs e)
-        {
-            if (player != null)
-                player.Dispose();
         }
 
         private void ShowMidiTracks(IEnumerable<MidiTrack> midiTracks)
@@ -284,7 +273,7 @@ namespace DPA_Musicsheets
                 MidiTracks.Add(midiTrack);
             }
 
-            ContentTabControl.SelectedIndex = 0;
+            contentTabControl.SelectedIndex = 0;
         }
 
         private void OnWindowClosing(object sender, CancelEventArgs e)
@@ -304,14 +293,38 @@ namespace DPA_Musicsheets
             }
         }
 
+        private void OnKeyDown(object sender, KeyEventArgs e)
+        {
+            Editor.CommandBase command = Editor.CommandFactory.GetInstance().Construct(e);
+            if (command != null)
+                editorInvoker.Invoke(command);
+        }
+
+        private void OnPlayButtonClick(object sender, RoutedEventArgs e)
+        {
+            if (player != null)
+            {
+                player.Dispose();
+            }
+
+            player = new MidiPlayer(outputDevice);
+            player.Play(filePathTextBox.Text);
+        }
+
+        private void OnStopButtonClick(object sender, RoutedEventArgs e)
+        {
+            if (player != null)
+                player.Dispose();
+        }
+
         private void OnEditorUndoButtonClick(object sender, RoutedEventArgs e)
         {
-
+            editorInvoker.Invoke(new Editor.UndoCommand(editorReceiver));
         }
 
         private void OnEditorRedoButtonClick(object sender, RoutedEventArgs e)
         {
-
+            editorInvoker.Invoke(new Editor.RedoCommand(editorReceiver));
         }
 
         private void OnEditorSaveButtonClick(object sender, RoutedEventArgs e)
@@ -324,7 +337,7 @@ namespace DPA_Musicsheets
 
         }
 
-        private void OnTextChanged(object sender, TextChangedEventArgs e)
+        private void OnEditorTextBoxTextChanged(object sender, TextChangedEventArgs e)
         {
             if (textChangedTimer == null)
             {
@@ -332,7 +345,8 @@ namespace DPA_Musicsheets
                 textChangedTimer.Interval = TimeSpan.FromSeconds(1.5d); // 1.5 Seconds
                 textChangedTimer.Tick += new EventHandler(OnTimedEvent);
             }
-            else if(textChangedTimer != null) {
+            else if (textChangedTimer != null)
+            {
                 textChangedTimer.Stop();
                 textChangedTimer.Start();
             }
@@ -341,9 +355,9 @@ namespace DPA_Musicsheets
         private void OnTimedEvent(object source, EventArgs e)
         {
             textChangedTimer.Stop();
-            if (Editor.Text != null)
+            if (editorTextBox.Text != null)
             {
-                currentScore = scoreBuilder.BuildScoreFromString(Editor.Text); // temp
+                currentScore = scoreBuilder.BuildScoreFromString(editorTextBox.Text); // temp
                 FillScoreViewer(currentScore);
             }
         }

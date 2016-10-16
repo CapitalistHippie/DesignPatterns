@@ -32,8 +32,6 @@ namespace DPA_Musicsheets.ScoreBuilders
         public Score BuildScoreFromString(string lilyPondText)
         {
             return scoreBuilders[".ly"].BuildScoreFromString(lilyPondText);
-
-            //throw new NotImplementedException();
         }
     }
 }

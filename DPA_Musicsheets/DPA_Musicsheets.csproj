@@ -68,6 +68,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Editor\EditorCommand.cs" />
+    <Compile Include="Editor\RedoCommand.cs" />
+    <Compile Include="Editor\UndoCommand.cs" />
     <Compile Include="MidiEventHandlers\ChannelEventHandler.cs" />
     <Compile Include="MidiEventHandlers\IEventHandler.cs" />
     <Compile Include="MidiEventHandlers\IMetaEventHandler.cs" />

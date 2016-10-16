@@ -6,15 +6,17 @@
         xmlns:PSAMWPFControl="clr-namespace:PSAMWPFControlLibrary;assembly=PSAMWPFControlLibrary"
         xmlns:local="clr-namespace:DPA_Musicsheets"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="800" Closing="OnWindowClosing" SizeChanged="OnSizeChanged">
+        Title="MainWindow" Height="600" Width="800" Closing="OnWindowClosing" SizeChanged="OnSizeChanged" KeyDown="OnKeyDown">
     
-    <Grid x:Name="MainGrid" Margin="10,10,10,10">
+    <!--Main grid.-->
+    <Grid Margin="10,10,10,10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-
-        <Grid Name="ControlsGrid">
+        
+        <!--Grid for controls.-->
+        <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
@@ -22,14 +24,14 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <Button x:Name="OpenButton" Content="Open" Grid.Column="0" Margin="0,0,0,0" Width="75" Height="23" Click="OnOpenButtonClick"/>
-            <TextBox x:Name="FilePathTextBox" Grid.Column="1" Height="23" Margin="10,0,0,0" />
-            <Button x:Name="PlayButton" Content="Play" Grid.Column="2" Margin="10,0,0,0" Width="75" Click="OnPlayButtonClick" Height="23"/>
-            <Button x:Name="StopButton" Content="Stop" Grid.Column="3" Margin="10,0,0,0" Width="75" Click="OnStopButtonClick" Height="23"/>
+            <Button Content="Open" Grid.Column="0" Margin="0,0,0,0" Width="75" Height="23" Click="OnOpenButtonClick"/>
+            <TextBox Name="filePathTextBox" Grid.Column="1" Height="23" Margin="10,0,0,0" />
+            <Button Content="Play" Grid.Column="2" Margin="10,0,0,0" Width="75" Click="OnPlayButtonClick" Height="23"/>
+            <Button Content="Stop" Grid.Column="3" Margin="10,0,0,0" Width="75" Click="OnStopButtonClick" Height="23"/>
         </Grid>
 
-
-        <Grid Name="ContentsGrid" Grid.Row="1" Margin="0,10,0,0">
+        <!--Grid for the content.-->
+        <Grid Grid.Row="1" Margin="0,10,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" />
@@ -37,12 +39,12 @@
 
             <TabControl>
                 <TabItem Header="Sheet">
-                    <TabControl x:Name="ContentSheetControl">
+                    <TabControl Name="sheetTabControl">
                     </TabControl>
                 </TabItem>
 
                 <TabItem Header="Content">
-                    <TabControl x:Name="ContentTabControl" ItemsSource="{Binding}">
+                    <TabControl Name="contentTabControl" ItemsSource="{Binding}">
                         <TabControl.ItemContainerStyle>
                             <Style TargetType="{x:Type TabItem}">
                                 <Setter Property="Header">
@@ -66,13 +68,16 @@
                     </TabControl>
                 </TabItem>
             </TabControl>
-
-            <Grid Name="EditorGrid" Grid.Column="1" Margin="10,0,0,0">
+            
+            <!--Grid for the editor and its controls.-->
+            <Grid Grid.Column="1" Margin="10,0,0,0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                <Grid Name="EditorControlsGrid">
+                
+                <!--Grid for the editor controls.-->
+                <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="auto" />
                         <ColumnDefinition Width="auto" />
@@ -86,7 +91,7 @@
                     <Button Content="Save as" Grid.Column="3" Margin="10,0,0,0" Click="OnEditorSaveAsButtonClick" Height="23"/>
                 </Grid>
 
-                <TextBox x:Name="Editor"  Grid.Row="1" Margin="0,10,0,0" TextChanged="OnTextChanged">
+                <TextBox Name="editorTextBox"  Grid.Row="1" Margin="0,10,0,0" TextChanged="OnEditorTextBoxTextChanged">
                 </TextBox>
             </Grid>
         </Grid>
