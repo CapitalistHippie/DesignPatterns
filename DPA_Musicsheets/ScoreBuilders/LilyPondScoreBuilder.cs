@@ -134,7 +134,9 @@ namespace DPA_Musicsheets.ScoreBuilders
                             continue;
                     }
 
-                    // If it's not any of the previous we've found a note. Lets parse it.
+                    // If it's not any of the previous we've found -> it's a note. Lets parse it.
+
+                    // TODO! : Catch not valid notes/tokens -> Return null Score. Do not save this score as a Savepoint/Memento/State
 
                     // Get the note type (g, fis etc...)
                     string step = Regex.Match(token, "[a-z]+").Value;
