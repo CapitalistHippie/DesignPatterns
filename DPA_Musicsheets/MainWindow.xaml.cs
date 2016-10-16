@@ -92,6 +92,8 @@ namespace DPA_Musicsheets
                     sheetTabControl.Items.Add(tab);
                 }
             }
+
+            sheetTabControl.SelectedIndex = 0;
         }
 
         private void OnOpenButtonClick(object sender, RoutedEventArgs e)

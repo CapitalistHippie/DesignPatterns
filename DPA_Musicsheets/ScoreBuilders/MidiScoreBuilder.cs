@@ -129,7 +129,8 @@ namespace DPA_Musicsheets.ScoreBuilders
 
         public Score BuildScoreFromString(string lilyPondText)
         {
-            throw new NotImplementedException(); // Not supposed to get at this point, ever. The midibuilder is, ofcourse not supposed to implement nor read lilyPondText, duh.
+            // Not supposed to get at this point, ever. The midibuilder is, ofcourse not supposed to implement nor read lilyPondText, duh.
+            throw new NotImplementedException();
         }
     }
 }

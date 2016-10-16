@@ -14,11 +14,12 @@ namespace DPA_Musicsheets.MidiEventHandlers
         private Staff activeStaff;
         private TimeSignature activeTimeSignature;
 
-        private int trackIndex = 0;
         private int ticksPerBeat;
         private double newBar;
+        private bool firstTimeSignature = true;
 
-        Dictionary<int, string> keyCodeDictionary = new Dictionary<int, string>
+        private Dictionary<int, Note> keyNoteMap = new Dictionary<int, Note>();
+        private Dictionary<int, string> keyCodeDictionary = new Dictionary<int, string>
             {
                 {0, "C"},
                 {1, "C#"},
@@ -34,7 +35,57 @@ namespace DPA_Musicsheets.MidiEventHandlers
                 {11, "B"},
             };
 
-        private Dictionary<int, Note> keyNoteMap = new Dictionary<int, Note>();
+        public ChannelEventHandler(Score score, Sequence midiSequence)
+        {
+            this.score = score;
+            score.AddObserver(this);
+
+            ticksPerBeat = midiSequence.Division;
+        }
+
+        public void Handle(MidiEvent midiEvent, int trackIndex)
+        {
+            var channelMessage = midiEvent.MidiMessage as ChannelMessage;
+
+            int keyCode = channelMessage.Data1;
+
+            // Note already exists, setNoteDuration
+            if (keyNoteMap.ContainsKey(keyCode) && (channelMessage.Data2 == 0 || channelMessage.Command == ChannelCommand.NoteOff))
+            {
+                double noteDuration = SetNoteDuration(keyCode, midiEvent, ticksPerBeat, activeTimeSignature);
+                if (midiEvent.AbsoluteTicks >= newBar) // New Bar Line
+                {
+                    activeStaff.AddSymbol(new Barline());
+                    newBar += ticksPerBeat * 4 * ((double)activeTimeSignature.Measure / activeTimeSignature.NumberOfBeats);
+                }
+            }
+            // Create new Note
+            else if (channelMessage.Command == ChannelCommand.NoteOn && channelMessage.Data2 > 0)
+            {
+                if (midiEvent.DeltaTicks > 0) // Found a rest -> construct rest symbol
+                {
+                    StaffSymbol rest = ConstructRest(midiEvent, ticksPerBeat, activeTimeSignature);
+                    activeStaff.AddSymbol(rest); // TODO
+                    if (midiEvent.AbsoluteTicks >= newBar) // New Bar Line
+                    {
+                        activeStaff.AddSymbol(new Barline());
+                        newBar += ticksPerBeat * 4 * ((double)activeTimeSignature.Measure / activeTimeSignature.NumberOfBeats);
+                    }
+                }
+
+                StaffSymbol note = ConstructNote(keyCode, midiEvent);
+                if (note != null)
+                {
+                    activeStaff.AddSymbol(note);
+                }
+                else
+                {
+                    Console.WriteLine("Error: Null note");
+                }
+            }
+        }
+
+        
 
         public StaffSymbol ConstructRest(MidiEvent midiEvent, int ticksPerBeat, TimeSignature timeSignature)
         {
@@ -118,7 +169,7 @@ namespace DPA_Musicsheets.MidiEventHandlers
             }
             if (noteDuration != -1) //temp
             {
-                double noteLeft = percentageOfWholeNote % noteDuration; // TODO do something with this
+                //double noteLeft = percentageOfWholeNote % noteDuration; // TODO do something with this
 
                 int convertDuration = (int)(1d / noteDuration);
                 note.Duration = StaffSymbolFactory.Instance.GetStaffSymbolDuration(convertDuration);
@@ -127,7 +178,7 @@ namespace DPA_Musicsheets.MidiEventHandlers
 
                 if (note == null)
                 {
-                    Console.WriteLine("fuuuu");
+                    Console.WriteLine("Oh-oh.");
                 }
                 return realDuration;
             }
@@ -156,55 +207,7 @@ namespace DPA_Musicsheets.MidiEventHandlers
             return realDuration;
         }
 
-        public ChannelEventHandler(Score score, Sequence midiSequence)
-        {
-            this.score = score;
-            score.AddObserver(this);
-
-            ticksPerBeat = midiSequence.Division;
-        }
-
-        public void Handle(MidiEvent midiEvent, int trackIndex)
-        {
-            var channelMessage = midiEvent.MidiMessage as ChannelMessage;
-
-            int keyCode = channelMessage.Data1;
-
-            // Note already exists, setNoteDuration
-            if (keyNoteMap.ContainsKey(keyCode) && (channelMessage.Data2 == 0 || channelMessage.Command == ChannelCommand.NoteOff))
-            {
-                double noteDuration = SetNoteDuration(keyCode, midiEvent, ticksPerBeat, activeTimeSignature);
-                if (midiEvent.AbsoluteTicks >= newBar) // New Bar Line
-                {
-                    activeStaff.AddSymbol(new Barline());
-                    newBar += ticksPerBeat * 4 * ((double)activeTimeSignature.Measure / activeTimeSignature.NumberOfBeats);
-                }
-            }
-            // Create new Note
-            else if (channelMessage.Command == ChannelCommand.NoteOn && channelMessage.Data2 > 0)
-            {
-                if (midiEvent.DeltaTicks > 0) // Found a rest -> construct rest symbol
-                {
-                    StaffSymbol rest = ConstructRest(midiEvent, ticksPerBeat, activeTimeSignature);
-                    activeStaff.AddSymbol(rest); // TODO
-                    if (midiEvent.AbsoluteTicks >= newBar) // New Bar Line
-                    {
-                        activeStaff.AddSymbol(new Barline());
-                        newBar += ticksPerBeat * 4 * ((double)activeTimeSignature.Measure / activeTimeSignature.NumberOfBeats);
-                    }
-                }
-
-                StaffSymbol note = ConstructNote(keyCode, midiEvent);
-                if (note != null)
-                {
-                    activeStaff.AddSymbol(note);
-                }
-                else
-                {
-                    Console.WriteLine("Error: Null note");
-                }
-            }
-        }
+        
 
         public void OnStaffAdded(Staff staff)
         {
@@ -219,15 +222,12 @@ namespace DPA_Musicsheets.MidiEventHandlers
             if (typeof(T) == typeof(TimeSignature))
             {
                 activeTimeSignature = symbol as TimeSignature;
-                newBar = ticksPerBeat * 4 * ((double)activeTimeSignature.Measure / activeTimeSignature.NumberOfBeats);
+                if (firstTimeSignature)
+                {
+                    newBar = ticksPerBeat * 4 * ((double)activeTimeSignature.Measure / activeTimeSignature.NumberOfBeats);
+                    firstTimeSignature = false;
+                }
             }
-        }
-
-
-        public void OnSymbolAdded(TimeSignature symbol)
-        {
-            activeTimeSignature = symbol;
-            newBar = ticksPerBeat * 4 * ((double)activeTimeSignature.Measure / activeTimeSignature.NumberOfBeats);
         }
     }
 }
