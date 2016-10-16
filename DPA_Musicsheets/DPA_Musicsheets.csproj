@@ -88,6 +88,8 @@
     <Compile Include="Model\SheetMusicVisitor.cs" />
     <Compile Include="Model\Tempo.cs" />
     <Compile Include="Model\Score.cs" />
+    <Compile Include="Savepoints\Savepoint.cs" />
+    <Compile Include="Savepoints\SavePointKeeper.cs" />
     <Compile Include="ScoreBuilders\IScoreBuilder.cs" />
     <Compile Include="ScoreBuilders\MidiScoreBuilder.cs" />
     <Compile Include="ScoreBuilders\LilyPondScoreBuilder.cs" />
