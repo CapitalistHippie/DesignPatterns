@@ -35,7 +35,6 @@ namespace DPA_Musicsheets
         private OutputDevice                    outputDevice    = new OutputDevice(0);
         private MidiPlayer                      player;
         private DispatcherTimer                 textChangedTimer;
-        public ObservableCollection<MidiTrack>  MidiTracks { get; private set; }
 
         private IScoreBuilder                   scoreBuilder    = new ScoreBuilder();
         private Model.Score                     currentScore;
@@ -46,10 +45,7 @@ namespace DPA_Musicsheets
 
         public MainWindow()
         {
-            this.MidiTracks = new ObservableCollection<MidiTrack>();
-
             InitializeComponent();
-            DataContext = MidiTracks;
 
             editorReceiver = new Editor.Receiver(editorTextBox);
             editorInvoker = new Editor.Invoker(editorReceiver);
@@ -61,177 +57,41 @@ namespace DPA_Musicsheets
 
             double width = sheetTabControl.ActualWidth - 75;
 
-            for (int i = 0; i < score.GetAmountOfStaves(); i++)
+            if (width > 0)
             {
-                Model.Staff staff = score.GetStaff(i);
-
-                ScrollViewer scrollViewer = new ScrollViewer();
-                StackPanel scoreStackPanel = new StackPanel(); // TODO fix width
-
-                scrollViewer.Content = scoreStackPanel;
-
-                PSAMWPFControlLibrary.IncipitViewerWPF incipitViewer = new PSAMWPFControlLibrary.IncipitViewerWPF();
-
-                Thickness margin = incipitViewer.Margin;
-                margin.Top += 50;
-                incipitViewer.Margin = margin;
-                incipitViewer.Width = width;
-
-                scoreStackPanel.Children.Add(incipitViewer);
-
-                Model.ScoreVisitor smVisitor = new Model.ScoreVisitor(staff, incipitViewer, scoreStackPanel, width);
-
-                for (int j = 0; j < staff.Symbols.Count; j++)
+                for (int i = 0; i < score.GetAmountOfStaves(); i++)
                 {
-                    Model.StaffSymbol symbol = staff.Symbols[j];
-                    smVisitor.CheckIfNewStaffNeeded();
-                    symbol.Accept(smVisitor, j);
+                    Model.Staff staff = score.GetStaff(i);
+
+                    ScrollViewer scrollViewer = new ScrollViewer();
+                    StackPanel scoreStackPanel = new StackPanel(); // TODO fix width
+
+                    scrollViewer.Content = scoreStackPanel;
+
+                    PSAMWPFControlLibrary.IncipitViewerWPF incipitViewer = new PSAMWPFControlLibrary.IncipitViewerWPF();
+
+                    Thickness margin = incipitViewer.Margin;
+                    margin.Top += 50;
+                    incipitViewer.Margin = margin;
+                    incipitViewer.Width = width;
+
+                    scoreStackPanel.Children.Add(incipitViewer);
+
+                    Model.ScoreVisitor smVisitor = new Model.ScoreVisitor(staff, incipitViewer, scoreStackPanel, width);
+
+                    for (int j = 0; j < staff.Symbols.Count; j++)
+                    {
+                        Model.StaffSymbol symbol = staff.Symbols[j];
+                        smVisitor.CheckIfNewStaffNeeded();
+                        symbol.Accept(smVisitor, j);
+                    }
+
+                    TabItem tab = new TabItem();
+                    tab.Header = staff.StaffName;
+                    tab.Content = scrollViewer;
+                    sheetTabControl.Items.Add(tab);
                 }
-
-                TabItem tab = new TabItem();
-                tab.Header = staff.StaffName;
-                tab.Content = scrollViewer;
-                sheetTabControl.Items.Add(tab);
             }
-
-            sheetTabControl.Items.Add(ReturnTestTabItem());
-        }
-
-        private TabItem ReturnTestTabItem()
-        {
-            // Setup
-            ScrollViewer scrollViewerTest = new ScrollViewer();
-            StackPanel scoreStackPanelTest = new StackPanel(); // TODO fix width
-
-            scrollViewerTest.Content = scoreStackPanelTest;
-
-            PSAMWPFControlLibrary.IncipitViewerWPF staffTest = new PSAMWPFControlLibrary.IncipitViewerWPF();
-
-            Thickness marginTest = staffTest.Margin;
-            marginTest.Top += 50;
-            staffTest.Margin = marginTest;
-            staffTest.Width = sheetTabControl.ActualWidth;
-
-            scoreStackPanelTest.Children.Add(staffTest);
-
-            // Test Symbols
-
-            staffTest.AddMusicalSymbol(new Clef(ClefType.GClef, 2));
-            staffTest.AddMusicalSymbol(new TimeSignature(TimeSignatureType.Numbers, 4, 4));
-
-            //staffTest.AddMusicalSymbol(new Note("A", 0, 4, MusicalSymbolDuration.Sixteenth, NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Start, NoteBeamType.Start }));
-            //staffTest.AddMusicalSymbol(new Note("C", 1, 5, MusicalSymbolDuration.Sixteenth, NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Continue, NoteBeamType.End }));
-            //staffTest.AddMusicalSymbol(new Note("D", 0, 5, MusicalSymbolDuration.Eighth, NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.End }));
-
-            //staffTest.AddMusicalSymbol(new Note("A", 0, 4, MusicalSymbolDuration.Sixteenth, NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }));
-            //staffTest.AddMusicalSymbol(new Note("C", 1, 5, MusicalSymbolDuration.Sixteenth, NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }));
-            //staffTest.AddMusicalSymbol(new Note("D", 0, 5, MusicalSymbolDuration.Eighth, NoteStemDirection.Down, NoteTieType.Start, new List<NoteBeamType>() { NoteBeamType.Single }));
-
-            //staffTest.AddMusicalSymbol(new Note("A", 0, 4, MusicalSymbolDuration.Sixteenth, NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Start }));
-            ////staffTest.AddMusicalSymbol(new Note("A", 0, 4, MusicalSymbolDuration.Sixteenth, NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Continue }));
-            ////staffTest.AddMusicalSymbol(new Note("A", 0, 4, MusicalSymbolDuration.Sixteenth, NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Continue }));
-            //staffTest.AddMusicalSymbol(new Note("A", 0, 4, MusicalSymbolDuration.Sixteenth, NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.End }));
-
-            //staffTest.AddMusicalSymbol(new Note("C", 0, 3, MusicalSymbolDuration.Whole, NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { IsChordElement = true });
-            //staffTest.AddMusicalSymbol(new Note("C", 0, 2, MusicalSymbolDuration.Whole, NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { IsChordElement = true });
-            //staffTest.AddMusicalSymbol(new Note("A", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { IsChordElement = true });
-            //staffTest.AddMusicalSymbol(new Note("A", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Down, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { IsChordElement = false });
-
-            //staffTest.AddMusicalSymbol(new Barline());
-
-            //staffTest.AddMusicalSymbol(new Note("D", 0, 5, MusicalSymbolDuration.Whole, NoteStemDirection.Down, NoteTieType.Stop, new List<NoteBeamType>() { NoteBeamType.Single }));
-            //staffTest.AddMusicalSymbol(new Note("E", 0, 4, MusicalSymbolDuration.Quarter, NoteStemDirection.Up, NoteTieType.Start, new List<NoteBeamType>() { NoteBeamType.Single }) { NumberOfDots = 1 });
-            //staffTest.AddMusicalSymbol(new Barline());
-
-            //staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Half, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }));
-            //staffTest.AddMusicalSymbol(
-            //    new Note("E", 0, 4, MusicalSymbolDuration.Half, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { IsChordElement = true });
-            //staffTest.AddMusicalSymbol(
-            //    new Note("G", 0, 4, MusicalSymbolDuration.Half, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { IsChordElement = true });
-            //staffTest.AddMusicalSymbol(new Barline());
-
-            //staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Half, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }));
-            //staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Quarter, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }));
-            //staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Sixteenth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }));
-            //staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Whole, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }));
-            //staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Start }) { NumberOfDots = 1 });
-            //staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Continue }) { NumberOfDots = 1 });
-            //staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.End }) { NumberOfDots = 1 });
-            //staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Start}) { NumberOfDots = 0 });
-            //staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Continue }) { NumberOfDots = 0 });
-            //staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.End }) { NumberOfDots = 0 });
-            
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Start }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Continue }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.End }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Start }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Continue }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.End }) { NumberOfDots = 0 });
-            //staffTest.AddMusicalSymbol(new Barline());
-
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Start }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Continue }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.End }) { NumberOfDots = 0 });
-
-            //staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Whole, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { NumberOfDots = 0 });
-
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Start, NoteBeamType.Start }));
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Continue, NoteBeamType.Continue }));
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.End, NoteBeamType.End }));
-
-            //staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Half, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { NumberOfDots = 0 });
-
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Quarter, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Quarter, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Quarter, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { NumberOfDots = 0 });
-
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { NumberOfDots = 0 });
-
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Sixteenth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Start, NoteBeamType.Start }));
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Sixteenth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Continue, NoteBeamType.Continue }));
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Sixteenth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.End, NoteBeamType.End }));
-
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.d32nd, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Start, NoteBeamType.Start, NoteBeamType.Start }));
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.d32nd, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Continue, NoteBeamType.Continue, NoteBeamType.Continue }));
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.d32nd, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.End, NoteBeamType.End, NoteBeamType.End }));
-
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.d64th, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.d64th, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.d64th, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { NumberOfDots = 0 });
-
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.d128th, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.d128th, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.d128th, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Single }) { NumberOfDots = 0 });
-
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Start }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Continue }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.End }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Start }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Continue }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.End }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Start }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Continue }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.End }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Start }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Continue }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.End }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Start }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Continue }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.End }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Start }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Continue }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.End }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Start }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.Continue }) { NumberOfDots = 0 });
-            staffTest.AddMusicalSymbol(new Note("C", 0, 4, MusicalSymbolDuration.Eighth, NoteStemDirection.Up, NoteTieType.None, new List<NoteBeamType>() { NoteBeamType.End }) { NumberOfDots = 0 });
-
-            TabItem tabTest = new TabItem();
-            tabTest.Header = "Test";
-            tabTest.Content = scrollViewerTest;
-
-            return tabTest;
         }
 
         private void OnOpenButtonClick(object sender, RoutedEventArgs e)
@@ -259,21 +119,7 @@ namespace DPA_Musicsheets
 
                 FillScoreViewer(score);
                 currentScore = score;
-
-                if (System.IO.Path.GetExtension(openFileDialog.FileName) == ".mid")
-                    ShowMidiTracks(MidiReader.ReadMidi(filePathTextBox.Text));                
             }
-        }
-
-        private void ShowMidiTracks(IEnumerable<MidiTrack> midiTracks)
-        {
-            MidiTracks.Clear();
-            foreach (var midiTrack in midiTracks)
-            {
-                MidiTracks.Add(midiTrack);
-            }
-
-            contentTabControl.SelectedIndex = 0;
         }
 
         private void OnWindowClosing(object sender, CancelEventArgs e)

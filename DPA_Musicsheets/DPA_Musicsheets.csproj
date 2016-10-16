@@ -72,27 +72,26 @@
     <Compile Include="Editor\CommandFactory.cs" />
     <Compile Include="Editor\RedoCommand.cs" />
     <Compile Include="Editor\UndoCommand.cs" />
-    <Compile Include="MidiEventHandlers\ChannelEventHandler.cs" />
-    <Compile Include="MidiEventHandlers\IEventHandler.cs" />
-    <Compile Include="MidiEventHandlers\IMetaEventHandler.cs" />
-    <Compile Include="MidiEventHandlers\MetaInstrumentEventNameHandler.cs" />
-    <Compile Include="MidiEventHandlers\MetaEventHandler.cs" />
-    <Compile Include="MidiEventHandlers\MetaTempoEventHandler.cs" />
-    <Compile Include="MidiEventHandlers\MetaTimeSignatureEventHandler.cs" />
-    <Compile Include="MidiEventHandlers\MetaTrackNameEventHandler.cs" />
+    <Compile Include="ScoreBuilders\MidiEventHandlers\ChannelEventHandler.cs" />
+    <Compile Include="ScoreBuilders\MidiEventHandlers\IEventHandler.cs" />
+    <Compile Include="ScoreBuilders\MidiEventHandlers\IMetaEventHandler.cs" />
+    <Compile Include="ScoreBuilders\MidiEventHandlers\MetaInstrumentEventNameHandler.cs" />
+    <Compile Include="ScoreBuilders\MidiEventHandlers\MetaEventHandler.cs" />
+    <Compile Include="ScoreBuilders\MidiEventHandlers\MetaTempoEventHandler.cs" />
+    <Compile Include="ScoreBuilders\MidiEventHandlers\MetaTimeSignatureEventHandler.cs" />
+    <Compile Include="ScoreBuilders\MidiEventHandlers\MetaTrackNameEventHandler.cs" />
     <Compile Include="Model\Barline.cs" />
     <Compile Include="Model\IScoreObserver.cs" />
     <Compile Include="Model\IStaffObserver.cs" />
     <Compile Include="Model\LilyPondStaffAdapter.cs" />
-    <Compile Include="MidiTrack.cs" />
     <Compile Include="Model\Clef.cs" />
-    <Compile Include="Model\SheetMusicVisitor.cs" />
+    <Compile Include="SheetMusicVisitor.cs" />
     <Compile Include="Model\Tempo.cs" />
     <Compile Include="Model\Score.cs" />
     <Compile Include="ScoreBuilders\IScoreBuilder.cs" />
     <Compile Include="ScoreBuilders\MidiScoreBuilder.cs" />
     <Compile Include="ScoreBuilders\LilyPondScoreBuilder.cs" />
-    <Compile Include="StaffSymbolFactory.cs" />
+    <Compile Include="Utils\StaffSymbolDurationUtils.cs" />
     <Compile Include="ScoreBuilders\ScoreBuilder.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -109,7 +108,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MidiPlayer.cs" />
-    <Compile Include="MidiReader.cs" />
     <Compile Include="Model\Note.cs" />
     <Compile Include="Model\Repeat.cs" />
     <Compile Include="Model\TimeSignature.cs" />
@@ -144,6 +142,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

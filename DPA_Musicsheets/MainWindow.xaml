@@ -37,36 +37,7 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <TabControl>
-                <TabItem Header="Sheet">
-                    <TabControl Name="sheetTabControl">
-                    </TabControl>
-                </TabItem>
-
-                <TabItem Header="Content">
-                    <TabControl Name="contentTabControl" ItemsSource="{Binding}">
-                        <TabControl.ItemContainerStyle>
-                            <Style TargetType="{x:Type TabItem}">
-                                <Setter Property="Header">
-                                    <Setter.Value>
-                                        <Binding Path="TrackName"/>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </TabControl.ItemContainerStyle>
-                        <TabControl.ContentTemplate>
-                            <DataTemplate>
-                                <ListBox ItemsSource="{Binding Messages}">
-                                    <ListBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <Label Content="{Binding .}" />
-                                        </DataTemplate>
-                                    </ListBox.ItemTemplate>
-                                </ListBox>
-                            </DataTemplate>
-                        </TabControl.ContentTemplate>
-                    </TabControl>
-                </TabItem>
+            <TabControl Name="sheetTabControl">
             </TabControl>
             
             <!--Grid for the editor and its controls.-->

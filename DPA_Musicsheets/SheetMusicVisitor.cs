@@ -37,18 +37,6 @@ namespace DPA_Musicsheets.Model
             this.width = width;
             
             amountEights = 0;
-
-            // 45 * (width / 45) = 683
-            // 45 = 683 / (width / 45)
-            // 45 = (width / 45) * 45 / width
-
-            // width -> 45
-            // width -> groter 45 groter
-            // width -> kleiner, 45 kleiner
-
-            // 45 / 683 / 45 = 2,9
-            // 2,9 * (683 / 45) = 45
-
             maxAmountOfEights = (45d / 683 * 45d) * (width / 45d); //config, no more than 45 on a bar
 
             currentClef = new Clef();
@@ -171,6 +159,9 @@ namespace DPA_Musicsheets.Model
 
         public void Visit(Tempo tempo) //TODO
         {
+            TextBox textBox = new TextBox();
+            textBox.Text = "Tempo = " + tempo.BeatsPerMinute;
+
             //throw new NotImplementedException();
         }
 
@@ -227,13 +218,6 @@ namespace DPA_Musicsheets.Model
                             continueNoteBeam = true;
                         }
                     }
-
-
-                    // Original plan for chords, hmm...
-                    //if (nextNote.StartTime != 0 && nextNote.StartTime == currentNote.StartTime)
-                    //{
-                    //    chord = true;
-                    //}
                 }
                 else if (continueNoteBeam)
                 {
